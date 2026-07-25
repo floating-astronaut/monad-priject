@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tsbuildinfo
+out/
+cache/
+broadcast/
+.env
+.env.*
+!.env.example
+*.key

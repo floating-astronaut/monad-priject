@@ -1,0 +1,49 @@
+[
+  {
+    "type": "function",
+    "name": "registerAgent",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "agent", "type": "address" },
+      { "name": "principal", "type": "address" },
+      { "name": "label", "type": "string" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "setPolicy",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "agent", "type": "address" },
+      { "name": "maxSpend", "type": "uint256" },
+      { "name": "allowedActionId", "type": "bytes32" },
+      { "name": "active", "type": "bool" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "executeGated",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "actionId", "type": "bytes32" },
+      { "name": "amount", "type": "uint256" },
+      { "name": "resultHash", "type": "bytes32" }
+    ],
+    "outputs": [{ "name": "attestationId", "type": "bytes32" }]
+  },
+  {
+    "type": "event",
+    "name": "ActionAttested",
+    "anonymous": false,
+    "inputs": [
+      { "name": "attestationId", "type": "bytes32", "indexed": true },
+      { "name": "agent", "type": "address", "indexed": true },
+      { "name": "principal", "type": "address", "indexed": true },
+      { "name": "actionId", "type": "bytes32", "indexed": false },
+      { "name": "amount", "type": "uint256", "indexed": false },
+      { "name": "resultHash", "type": "bytes32", "indexed": false }
+    ]
+  }
+]

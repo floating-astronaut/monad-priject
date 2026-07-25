@@ -1,0 +1,385 @@
+import { useMemo, useState } from "react";
+import {
+  ArrowUpRight,
+  Bot,
+  Check,
+  ChevronRight,
+  CircleDot,
+  ExternalLink,
+  Fingerprint,
+  Gauge,
+  Link2,
+  LockKeyhole,
+  Play,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  UserRoundCheck,
+  Wallet,
+  X,
+  Zap,
+} from "lucide-react";
+import {
+  ACTION_ID,
+  connectWallet,
+  EXPLORER,
+  GATE_ADDRESS,
+  gateContract,
+  resultHash,
+  shortAddress,
+} from "./gate";
+
+type StepState = "done" | "active" | "idle";
+type Receipt = {
+  decision: "denied" | "allowed";
+  amount: number;
+  time: string;
+  hash?: string;
+  reason?: string;
+};
+
+const DEMO_AGENT = "0xA6E17000000000000000000000000000000A6E17";
+const DEMO_PRINCIPAL = "0xA11CE00000000000000000000000000000A11CE";
+
+function App() {
+  const [wallet, setWallet] = useState("");
+  const [connecting, setConnecting] = useState(false);
+  const [registered, setRegistered] = useState(true);
+  const [policyActive, setPolicyActive] = useState(true);
+  const [maxSpend, setMaxSpend] = useState(10);
+  const [amount, setAmount] = useState(100);
+  const [running, setRunning] = useState(false);
+  const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [history, setHistory] = useState<Receipt[]>([]);
+  const [toast, setToast] = useState("");
+  const [liveMode, setLiveMode] = useState(false);
+
+  const agent = wallet || DEMO_AGENT;
+  const principal = wallet || DEMO_PRINCIPAL;
+  const allowed = registered && policyActive && amount <= maxSpend;
+  const status = !registered ? "Identity missing" : !policyActive ? "Policy paused" : allowed ? "Ready to attest" : "Cap exceeded";
+
+  const steps: { label: string; state: StepState }[] = useMemo(
+    () => [
+      { label: "Identity", state: registered ? "done" : "active" },
+      { label: "Policy", state: registered && policyActive ? "done" : registered ? "active" : "idle" },
+      {
+        label: "Gate",
+        state: receipt ? "done" : registered && policyActive ? "active" : "idle",
+      },
+      { label: "Proof", state: receipt?.decision === "allowed" ? "active" : "idle" },
+    ],
+    [registered, policyActive, receipt],
+  );
+
+  async function onConnect() {
+    setConnecting(true);
+    try {
+      const connected = await connectWallet();
+      setWallet(connected.address);
+      setLiveMode(Boolean(GATE_ADDRESS));
+      showToast(GATE_ADDRESS ? "Wallet connected · live mode ready" : "Wallet connected · demo mode");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Wallet connection failed");
+    } finally {
+      setConnecting(false);
+    }
+  }
+
+  function showToast(message: string) {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 3200);
+  }
+
+  async function runGate() {
+    setRunning(true);
+    setReceipt(null);
+    await new Promise((resolve) => window.setTimeout(resolve, 720));
+
+    if (!allowed) {
+      const denied: Receipt = {
+        decision: "denied",
+        amount,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+        reason: !registered
+          ? "Agent is not registered"
+          : !policyActive
+            ? "Principal has paused this policy"
+            : `Requested ${amount} MON exceeds the ${maxSpend} MON policy cap`,
+      };
+      setReceipt(denied);
+      setHistory((items) => [denied, ...items].slice(0, 4));
+      setRunning(false);
+      return;
+    }
+
+    try {
+      let hash = `demo-${crypto.randomUUID().slice(0, 8)}`;
+      if (liveMode && wallet) {
+        const connected = await connectWallet();
+        const tx = await gateContract(connected.signer).executeGated(
+          ACTION_ID,
+          amount,
+          resultHash(agent, amount),
+        );
+        hash = tx.hash;
+        await tx.wait();
+      }
+      const passed: Receipt = {
+        decision: "allowed",
+        amount,
+        hash,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+      };
+      setReceipt(passed);
+      setHistory((items) => [passed, ...items].slice(0, 4));
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Transaction failed");
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  function resetDemo() {
+    setRegistered(true);
+    setPolicyActive(true);
+    setMaxSpend(10);
+    setAmount(100);
+    setReceipt(null);
+    setHistory([]);
+    showToast("Demo reset · start with the denied action");
+  }
+
+  return (
+    <div className="app-shell">
+      <div className="ambient ambient-one" />
+      <div className="ambient ambient-two" />
+
+      <header className="topbar">
+        <a className="brand" href="#" aria-label="MONAD Gate home">
+          <span className="brand-mark"><LockKeyhole size={17} /></span>
+          <span>MONAD</span>
+          <span className="brand-divider">|</span>
+          <span className="brand-light">Gate</span>
+        </a>
+        <div className="topbar-right">
+          <span className="network-pill"><span className="live-dot" /> Monad Testnet</span>
+          <button className="wallet-button" onClick={onConnect} disabled={connecting}>
+            {connecting ? <RefreshCw className="spin" size={16} /> : <Wallet size={16} />}
+            {wallet ? shortAddress(wallet) : "Connect wallet"}
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section className="hero">
+          <div>
+            <div className="eyebrow"><Sparkles size={14} /> Permission & proof for autonomous agents</div>
+            <h1>Let agents act.<br /><span>Keep humans accountable.</span></h1>
+            <p className="hero-copy">
+              Register an agent, define exactly what it may do, gate every action,
+              and leave an immutable receipt on Monad.
+            </p>
+          </div>
+          <div className="hero-proof">
+            <div className="proof-icon"><ShieldCheck size={23} /></div>
+            <div><strong>Principal-controlled</strong><span>Every action traces back to a human.</span></div>
+          </div>
+        </section>
+
+        <nav className="stepper" aria-label="Gate workflow">
+          {steps.map((step, index) => (
+            <div className={`step ${step.state}`} key={step.label}>
+              <span className="step-number">{step.state === "done" ? <Check size={13} /> : index + 1}</span>
+              <span>{step.label}</span>
+              {index < steps.length - 1 && <ChevronRight className="step-arrow" size={16} />}
+            </div>
+          ))}
+        </nav>
+
+        <div className="workspace">
+          <section className="left-stack">
+            <article className="panel identity-panel">
+              <PanelHeading icon={<Fingerprint size={18} />} label="01 / IDENTITY" title="Registered actor" />
+              <div className="identity-card">
+                <div className="agent-avatar"><Bot size={25} /></div>
+                <div className="identity-main">
+                  <div className="identity-name-row">
+                    <strong>Atlas Treasury Agent</strong>
+                    <span className={`verified ${registered ? "" : "off"}`}>
+                      {registered ? <Check size={11} /> : <X size={11} />} {registered ? "Verified" : "Unregistered"}
+                    </span>
+                  </div>
+                  <code>{shortAddress(agent)}</code>
+                </div>
+                <button className="icon-toggle" onClick={() => setRegistered((value) => !value)} title="Toggle registration">
+                  <RefreshCw size={15} />
+                </button>
+              </div>
+              <div className="principal-row">
+                <UserRoundCheck size={17} />
+                <div><span>Human principal</span><code>{shortAddress(principal)}</code></div>
+                <div className="liability">LIABLE</div>
+              </div>
+            </article>
+
+            <article className="panel">
+              <PanelHeading icon={<Gauge size={18} />} label="02 / POLICY" title="Action boundary" />
+              <div className="policy-grid">
+                <div className="policy-field">
+                  <span>Allowed action</span>
+                  <strong><Zap size={15} /> TRANSFER_MOCK</strong>
+                  <code>{ACTION_ID.slice(0, 10)}…{ACTION_ID.slice(-6)}</code>
+                </div>
+                <div className="policy-field">
+                  <span>Maximum spend</span>
+                  <div className="cap-input">
+                    <input
+                      aria-label="Maximum spend"
+                      type="number"
+                      min="0"
+                      value={maxSpend}
+                      onChange={(event) => setMaxSpend(Number(event.target.value))}
+                    />
+                    <b>MON</b>
+                  </div>
+                </div>
+              </div>
+              <div className="policy-status">
+                <div><CircleDot size={16} /><span>Policy status</span></div>
+                <button
+                  className={`toggle ${policyActive ? "on" : ""}`}
+                  onClick={() => setPolicyActive((value) => !value)}
+                  aria-label="Toggle policy"
+                ><span /></button>
+                <strong>{policyActive ? "Active" : "Paused"}</strong>
+              </div>
+            </article>
+
+            <div className="principle-note">
+              <LockKeyhole size={17} />
+              <p><strong>The principal stays on the hook.</strong> The agent gets bounded authority—not a blank cheque.</p>
+            </div>
+          </section>
+
+          <section className="right-stack">
+            <article className="panel action-panel">
+              <PanelHeading icon={<Play size={18} />} label="03 / GATE" title="Try an action" />
+              <div className="amount-label"><span>Transfer amount</span><em>{status}</em></div>
+              <div className="amount-input">
+                <input
+                  aria-label="Transfer amount"
+                  type="number"
+                  min="0"
+                  value={amount}
+                  onChange={(event) => { setAmount(Number(event.target.value)); setReceipt(null); }}
+                />
+                <span>MON</span>
+              </div>
+              <input
+                className="range"
+                aria-label="Transfer amount slider"
+                type="range"
+                min="0"
+                max="120"
+                value={Math.min(amount, 120)}
+                onChange={(event) => { setAmount(Number(event.target.value)); setReceipt(null); }}
+              />
+              <div className="range-labels"><span>0</span><span className="cap-marker">CAP {maxSpend}</span><span>120 MON</span></div>
+
+              <button className="run-button" onClick={runGate} disabled={running}>
+                {running ? <><RefreshCw className="spin" size={18} /> Checking policy…</> : <><ShieldCheck size={18} /> Run through Gate <ArrowUpRight size={17} /></>}
+              </button>
+              <p className="run-caption">{liveMode ? "Live contract mode · transaction requires agent signer" : "Safe demo mode · no funds will move"}</p>
+            </article>
+
+            <article className={`decision-card ${receipt?.decision || "empty"}`}>
+              {!receipt && (
+                <div className="empty-decision">
+                  <div><ShieldCheck size={27} /></div>
+                  <strong>Awaiting action</strong>
+                  <span>Gate checks identity, policy, action, and spend.</span>
+                </div>
+              )}
+              {receipt?.decision === "denied" && (
+                <>
+                  <div className="decision-top">
+                    <span className="decision-icon"><X size={21} /></span>
+                    <div><small>DECISION</small><h3>Action denied</h3></div>
+                    <span className="decision-time">{receipt.time}</span>
+                  </div>
+                  <p>{receipt.reason}</p>
+                  <div className="reason-code"><span>POLICY_REVERT</span><code>SpendCapExceeded({amount}, {maxSpend})</code></div>
+                  <button className="fix-button" onClick={() => { setAmount(Math.max(1, Math.min(5, maxSpend))); setReceipt(null); }}>
+                    Set amount to 5 MON <ChevronRight size={15} />
+                  </button>
+                </>
+              )}
+              {receipt?.decision === "allowed" && (
+                <>
+                  <div className="decision-top">
+                    <span className="decision-icon"><Check size={21} /></span>
+                    <div><small>DECISION</small><h3>Action attested</h3></div>
+                    <span className="decision-time">{receipt.time}</span>
+                  </div>
+                  <p>Policy passed. A tamper-proof receipt binds agent, principal, action, and result.</p>
+                  <div className="receipt-grid">
+                    <span>Agent<strong>{shortAddress(agent)}</strong></span>
+                    <span>Amount<strong>{amount} MON</strong></span>
+                  </div>
+                  {receipt.hash?.startsWith("0x") ? (
+                    <a className="proof-link" href={`${EXPLORER}/tx/${receipt.hash}`} target="_blank" rel="noreferrer">
+                      <Link2 size={16} /> View proof on Monad <ExternalLink size={14} />
+                    </a>
+                  ) : (
+                    <div className="demo-proof"><Link2 size={15} /> Demo attestation · {receipt.hash}</div>
+                  )}
+                </>
+              )}
+            </article>
+          </section>
+        </div>
+
+        <section className="audit-strip">
+          <div className="audit-title">
+            <span>Recent decisions</span>
+            <button onClick={resetDemo}><RefreshCw size={13} /> Reset demo</button>
+          </div>
+          <div className="audit-list">
+            {history.length === 0 && <p>Run the 100 MON action first. Let the red screen tell the story.</p>}
+            {history.map((item, index) => (
+              <div className="audit-item" key={`${item.time}-${index}`}>
+                <span className={`audit-status ${item.decision}`} />
+                <strong>{item.decision === "allowed" ? "ATTESTED" : "DENIED"}</strong>
+                <span>TRANSFER_MOCK · {item.amount} MON</span>
+                <time>{item.time}</time>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <span>Built for the agent economy on</span>
+        <strong>Monad</strong>
+        <span className="footer-dot">·</span>
+        <span>Chain ID 10143</span>
+        <a href={EXPLORER} target="_blank" rel="noreferrer">Explorer <ExternalLink size={12} /></a>
+      </footer>
+
+      {toast && <div className="toast">{toast}</div>}
+    </div>
+  );
+}
+
+function PanelHeading({ icon, label, title }: { icon: React.ReactNode; label: string; title: string }) {
+  return (
+    <div className="panel-heading">
+      <span className="panel-icon">{icon}</span>
+      <div><small>{label}</small><h2>{title}</h2></div>
+    </div>
+  );
+}
+
+export default App;
+

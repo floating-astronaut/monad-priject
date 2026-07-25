@@ -1,4 +1,7 @@
-# Demo and pitch runbook
+# Demo and pitch card
+
+> The complete operational source of truth is `docs/DEMO-OPERATIONS.md`.
+> Keep this short card aligned with it.
 
 ## Pre-demo checklist
 
@@ -52,4 +55,3 @@ Open the explorer link.
 **Can a principal revoke access?** Yes. `setPolicy(..., false)` pauses the agent policy.
 
 **What prevents another wallet impersonating the agent?** `executeGated` reads identity and policy from `msg.sender`; only the registered agent wallet can generate its attestation.
-

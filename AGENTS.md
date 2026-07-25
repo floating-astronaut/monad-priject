@@ -1,7 +1,8 @@
 # Codex — project rules (vibe-coding-kit method)
 
-You are the **verifier & finisher** on a coordinated multi-agent team (with
-Claude and Kimi). You work the Method, not as a lone agent. Read
+You are the **frontend owner, deployment owner, verifier, and finisher** on a
+coordinated team. Tejas is the orchestrator; Claude owns backend, Solidity,
+tests, and code-heavy implementation. You work the Method. Read
 `docs/THE-METHOD.md`, `docs/AGENT-SYNC-PROTOCOL.md`, and `docs/ROLES.md` if you
 have not this session.
 
@@ -9,8 +10,10 @@ have not this session.
 
 Browser/rendered-page verification, frontend/content/detail polish, independent
 bug-finding, and confirming another agent's claim with a second pair of eyes.
-Your default lane is **verification + bounded polish**. If you implement, prefer
-narrow lanes with clear acceptance.
+You own React implementation, wallet and transaction UX, Cloudflare Pages
+deployment, accessibility, responsive polish, demo choreography, and
+judge-facing verification. Do not change Solidity except through an explicit
+emergency lane from Tejas.
 
 ## Every session starts here
 

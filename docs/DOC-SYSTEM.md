@@ -32,13 +32,28 @@ precedence, so an agent never guesses where the truth lives.
 | `control-plane/ENGINEERING_SUPERVISOR.md` | evidence log | every lane close |
 | `docs/PRODUCT.md` | product scope, demo contract, and acceptance criteria | user-facing behavior or scope changes |
 | `docs/ARCHITECTURE.md` | system boundaries, contract interface, and runtime modes | component, interface, chain, or deployment changes |
-| `docs/DEMO.md` | pitch flow and operator runbook | judge-facing flow or talk track changes |
+| `docs/BUILD-SPEC.md` | implementation requirements and demo-ready definition | build scope or delivery contract changes |
+| `docs/IMPLEMENTATION-LANES.md` | ordered backlog, ownership, dependencies, kill switches | lane graph or role ownership changes |
+| `docs/LOCAL-DEVELOPMENT.md` | clean-machine setup and local run commands | local tooling or commands change |
+| `docs/MONAD-DEPLOYMENT.md` | testnet deploy, verify, record, and handoff | chain tooling/network/deploy process changes |
+| `docs/CLOUDFLARE-DEPLOYMENT.md` | Pages preview, production, fallback, rollback | hosting configuration/process changes |
+| `docs/TESTING.md` | required tests, release gates, evidence | behavior or verification requirements change |
+| `docs/SECURITY.md` | threat model, secret handling, demo truth | trust boundary or credential handling changes |
+| `docs/DEMO-OPERATIONS.md` | pitch, preflight, fallback, and Q&A | judge-facing flow changes |
+| `docs/SOURCES.md` | primary research index and retrieval rules | a mutable fact/source is added or replaced |
+| `docs/OPEN-QUESTIONS.md` | decisions reserved for Tejas | an answer is given or new blocker found |
+| `docs/DEMO.md` | legacy short pitch card | keep aligned with `DEMO-OPERATIONS.md` until retired |
 
-### Add your repo's spoke docs here
+## Reading routes
 
-As your project grows, register each contract doc in the table above with what
-it governs and its update trigger. Typical spokes: `ARCHITECTURE.md`,
-`DATA-MODEL.md`, `REPORTING.md`, `PRICING.md`, `SECURITY.md`, `UI-SYSTEM.md`.
+- Any coding lane: `BUILD-SPEC.md`, `ARCHITECTURE.md`, `SECURITY.md`, then the
+  lane-specific runbook.
+- Backend/chain: add `MONAD-DEPLOYMENT.md` and `TESTING.md`.
+- Frontend/deployment: add `CLOUDFLARE-DEPLOYMENT.md`, `TESTING.md`, and
+  `DEMO-OPERATIONS.md`.
+- Tejas/orchestration: `OPEN-QUESTIONS.md`, `IMPLEMENTATION-LANES.md`, live
+  control plane.
+- Any mutable external fact: verify against `SOURCES.md`.
 
 ## Rules
 

@@ -2,11 +2,11 @@
 
 ## Components
 
-### React demo surface (`ui/`)
+### React application (`ui/`)
 
-Owns wallet connection, workflow presentation, local fail/pass simulation, and
-the live `executeGated` transaction. The UI imports the frozen ABI from
-`packages/abi/gate.json`.
+Owns principal setup, agent action, wallet/chain state, transaction lifecycle,
+local fail/pass simulation, and explorer proof. The UI imports the frozen ABI
+from `packages/abi/gate.json`.
 
 ### Interface handoff (`packages/abi/`)
 
@@ -19,6 +19,14 @@ canonical `TRANSFER_MOCK` action ID.
 `MonadGate.sol` stores agent identity and one current policy per agent. The
 principal signs registration and policy changes. The registered agent signs
 `executeGated`.
+
+Before deployment, identity overwrite/rotation semantics must be hardened per
+`BUILD-SPEC.md` and `SECURITY.md`.
+
+### Cloudflare Pages
+
+Serves the built static SPA from `ui/dist` using Git integration. It holds only
+public build configuration. No Worker/backend is required for the MVP.
 
 ## Frozen interface
 
@@ -47,8 +55,8 @@ update to this document.
 same product state machine locally and labels receipts as simulated.
 
 **Live mode** requires `VITE_GATE_ADDRESS` and a connected Monad testnet wallet.
-A valid request sends `executeGated`; the confirmed transaction links to
-MonadVision.
+Principal mode registers/sets policy; agent mode sends `executeGated`. Confirmed
+transactions link to the configured testnet explorer.
 
 ## Deployment target
 
@@ -57,3 +65,14 @@ MonadVision.
 - RPC: `https://testnet-rpc.monad.xyz`
 - Explorer: `https://testnet.monadvision.com`
 
+These are expected baselines, not permanent facts. Re-check
+`docs/MONAD-DEPLOYMENT.md` and official sources on deploy day; the current
+testnet has previously reset.
+
+## Deployment boundary
+
+- Monad contract and explorer verification: Claude.
+- ABI/address handoff: Claude → Codex.
+- Cloudflare Pages and frontend public config: Codex.
+- Credentials, funding, and production go/no-go: Tejas.
+- A Cloudflare Worker requires a new approved architecture lane.

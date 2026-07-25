@@ -1,57 +1,71 @@
-# Roles — who does what, and why
+# Roles — MONAD | Gate team contract
 
-Agents are not interchangeable. The Method gets its speed from assigning each
-lane to the agent with the comparative advantage for it. These are defaults you
-tune to your own roster; the principle (assign by strength, not by who's free)
-is what matters.
+## Tejas — operator and orchestrator
 
-## Claude Code — the builder
+**Authority:** product decisions, lane priority, scope, credentials, wallet
+funding, judge strategy, and final go/no-go.
 
-**Strengths:** deep coding throughput, multi-file backend/frontend
-implementation, migrations, route + data-contract work, large refactors once a
-lane is clear, authoring long structured docs.
+**Owns:**
 
-**Default lane:** the implementation-heavy lane. When a lane means touching many
-files coherently or holding a lot of context, it's Claude's.
+- opening, assigning, pausing, and re-cutting lanes;
+- resolving contract/UI disagreements;
+- approving interface changes after the ABI freeze;
+- providing Cloudflare and burner-wallet access;
+- enforcing the hackathon clock and freeze;
+- final submission and pitch delivery.
 
-## Codex — the verifier & finisher
+Tejas does not need to implement code. Agents must present decisions in
+`docs/OPEN-QUESTIONS.md` and may not silently choose a scope-changing answer.
 
-**Strengths:** browser-led and rendered-page verification, frontend/content/
-detail polish, independent bug-finding, confirming a claim with a second pair
-of eyes, doc enforcement.
+## Claude Code — backend and primary code builder
 
-**Default lane:** verification and bounded polish. After a build lands, Codex
-confirms it renders/behaves as claimed and tightens the details. If Codex
-implements, it prefers narrow lanes with clear acceptance.
+**Owns:**
 
-## Kimi — the orchestrator
+- Solidity contract design and implementation;
+- Foundry setup, unit/fuzz/invariant tests, deployment scripts, and ABI export;
+- agent actor/CLI code and any backend or Cloudflare Worker API;
+- security fixes and backend documentation write-back;
+- Monad testnet deployment and contract verification with Tejas present for
+  credential approval.
 
-**Strengths:** coordination and cross-repo orchestration, parallel verification,
-running many commands at once, infra/runtime checks, longer verification loops,
-background task management.
+Claude may not change frontend UX or the frozen ABI without a handoff and Tejas
+approval.
 
-**Default lane:** coordination, cross-repo work, parallel verification, and
-infra. When work spans repos or needs many things checked at once, it's Kimi's.
+## Codex — frontend, deployment, verifier, and finisher
+
+**Owns:**
+
+- React UI, wallet UX, transaction-state UX, accessibility, responsive polish;
+- ABI consumption after Claude's handoff;
+- Cloudflare Pages configuration, previews, production deploy, and smoke tests;
+- browser verification of every judge-facing state;
+- demo choreography, backup recording checklist, and submission polish;
+- independent verification of Claude's backend claims.
+
+Codex does not implement Solidity except for an explicit emergency lane from
+Tejas.
 
 ## The split in one line
 
-> **Claude builds. Codex verifies and finishes. Kimi orchestrates and checks
-> in parallel.**
+> **Tejas directs. Claude builds the chain and backend. Codex builds and deploys
+> the frontend, then verifies and polishes the full story.**
 
-## Rules of the split
+## Rules
 
-- It's a **default, not a wall.** All three can code. Assign by advantage, then
-  by availability.
-- **One lane, one owner.** Two agents never hold the same surface at once.
-- **The owner closes the lane** — including the write-back. You don't hand a
-  half-closed lane to another agent without a clean handoff (see
-  `AGENT-SYNC-PROTOCOL.md` §4).
-- **Escalate by strength.** A lane stuck on the wrong agent should be re-cut and
-  reassigned, not forced.
+- One lane, one owner.
+- Tejas is the only orchestrator and final decision maker.
+- The owner closes the lane with docs, board status, and evidence.
+- Cross-surface changes require a clean handoff.
+- Kimi is not part of the active roster for this hackathon.
 
-## Mapping to your roster
+## Handoff boundary
 
-Running a different set (Cursor, Aider, Gemini, OpenClaw…)? Keep the three
-*functions* — **builder / verifier / orchestrator** — and map your agents onto
-them. The Method depends on the functions being covered, not on these specific
-tools.
+Claude hands Codex only:
+
+- `packages/abi/gate.json`;
+- `packages/abi/addresses.json`;
+- deployed contract and deployment transaction URLs;
+- a green backend verification summary;
+- exact revert/error names the UI must render.
+
+Codex treats that interface as frozen. Tejas arbitrates any requested change.

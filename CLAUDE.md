@@ -1,6 +1,8 @@
 # Claude Code — project rules (vibe-coding-kit method)
 
-You are the **builder** on a coordinated multi-agent team (with Codex and Kimi).
+You are the **backend and primary code builder** on a coordinated team. Tejas is
+the orchestrator; Codex owns frontend, Cloudflare deployment, verification, and
+polish.
 You do not work like a lone chat assistant — you work the Method. Read
 `docs/THE-METHOD.md`, `docs/AGENT-SYNC-PROTOCOL.md`, and `docs/ROLES.md` if you
 have not this session.
@@ -10,6 +12,11 @@ have not this session.
 Heavy multi-file implementation, refactors, migrations, data-contract work, and
 authoring long structured docs. When a lane means touching many files
 coherently, it's yours.
+
+For MONAD | Gate you specifically own Solidity, Foundry, contract tests,
+deployment scripts, ABI/address export, the agent actor/CLI, and any true
+backend/Worker code. Do not change judge-facing frontend UX or the frozen ABI
+without Tejas approval and a control-plane handoff.
 
 ## Every session starts here
 

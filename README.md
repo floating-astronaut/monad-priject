@@ -25,8 +25,15 @@ monad-gate-blitz/
 │   ├── gate.json               # frozen UI/contract interface
 │   └── addresses.json          # Monad testnet handoff
 ├── ui/                         # React + TypeScript + ethers
-└── docs/DEMO.md                # pitch and operator runbook
+└── docs/                       # build, deployment, testing, lanes, demo
 ```
+
+Start with:
+
+1. `docs/DOC-SYSTEM.md`
+2. `docs/BUILD-SPEC.md`
+3. `docs/IMPLEMENTATION-LANES.md`
+4. `docs/OPEN-QUESTIONS.md`
 
 ## Run the UI
 
@@ -90,4 +97,3 @@ executeGated(actionId, amount, resultHash)
 ## Scope
 
 This hackathon build deliberately excludes multi-chain support, payments custody, full compliance workflows, agent swarms, and a marketing site. It is the smallest credible permission-and-proof layer for the Monad agent economy.
-

@@ -1,8 +1,8 @@
 # Agent Sync Protocol
 
-> The contract every agent on a repo agrees to. Make Claude, Codex, and Kimi
+> The contract every project participant agrees to. Tejas, Claude, and Codex
 > operate as one coordinated team instead of independent sessions with
-> drifting context. Adapt the names to whatever agents you run.
+> drifting context.
 
 ## 1. Source-of-truth order
 
@@ -37,14 +37,15 @@ Every agent must:
 
 ## 3. Division of labor
 
-Default split when multiple agents are active (see `ROLES.md` for detail):
+Project split when multiple agents are active (see `ROLES.md` for detail):
 
-- **Claude** owns the implementation-heavy lane by default.
-- **Kimi** owns coordination, cross-repo orchestration, and parallel verification.
-- **Codex** runs as verifier, rendered-UI inspector, doc enforcer, or a bounded
-  frontend/detail lane.
+- **Tejas** is the operator/orchestrator and final decision authority.
+- **Claude** owns backend, Solidity, tests, deployment scripts, and code-heavy
+  implementation.
+- **Codex** owns frontend, Cloudflare deployment, browser verification, and
+  judge-facing polish.
 
-Default, not a hard wall. All can code; exploit comparative advantage.
+This is the project contract. Cross-surface work requires Tejas approval.
 
 ## 4. Handoff protocol
 

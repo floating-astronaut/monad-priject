@@ -2,6 +2,30 @@
 
 > Append-only. Newest first. One entry per closed lane. See docs/LANE-LIFECYCLE.md §5.
 
+## 2026-07-25 — DOC-1 — Build, deployment, and demo source-of-truth
+
+- **Owner:** Codex
+- **Read/researched:** supplied co-dev brief; existing product/architecture;
+  Vibe Coding Kit control plane; current official Monad testnet, deployment,
+  Foundry, verification, JSON-RPC, and changelog documentation; current
+  Cloudflare Pages React, monorepo, build, local-development, Wrangler, and
+  watch-path documentation; Vite environment guidance.
+- **Changed:** created build spec, dependency-ordered implementation lanes,
+  clean-machine runbook, Monad deployment/verification runbook, Cloudflare
+  preview/production runbook, testing contract, security contract, operational
+  demo, source index, and Tejas decision queue. Rewrote active roles to Tejas
+  orchestrator / Claude backend / Codex frontend-deploy-polish.
+- **Verified:** all required docs exist and are non-empty; `git diff --check`
+  passes after whitespace cleanup; repository status shows no changes in
+  `contracts/`, `ui/src/`, or `packages/abi/`; sources are direct official URLs.
+- **Docs updated:** doc map, architecture, legacy demo pointer, roles, agent
+  configs, sync protocol, README, lane board, session coordination, evidence.
+- **Material finding:** current proof-of-concept registration can be overwritten
+  by another self-declared principal; BE-1 must harden identity lifecycle before
+  deployment.
+- **Remains:** Tejas answers `OPEN-QUESTIONS.md` in OP-1, then authorizes BE-1,
+  ENV-1, and FE-1 according to the dependency graph.
+
 ## 2026-07-25 — MG-1 — Hackathon MVP and repository bootstrap
 
 - **Owner:** Codex

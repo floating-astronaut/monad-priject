@@ -42,7 +42,7 @@ precedence, so an agent never guesses where the truth lives.
 | `docs/DEMO-OPERATIONS.md` | pitch, preflight, fallback, and Q&A | judge-facing flow changes |
 | `docs/SOURCES.md` | primary research index and retrieval rules | a mutable fact/source is added or replaced |
 | `docs/OPEN-QUESTIONS.md` | decisions reserved for Tejas | an answer is given or new blocker found |
-| `docs/DEMO.md` | legacy short pitch card | keep aligned with `DEMO-OPERATIONS.md` until retired |
+| `docs/DEMO.md` | **retired 2026-07-26** — a pointer to `DEMO-OPERATIONS.md` | never; do not add content here |
 
 ## Reading routes
 
@@ -76,7 +76,10 @@ A read-only mirror of the control plane is published to a Google Sheet
 ## Rules
 
 - **Amend, don't fork.** If a fact belongs in an existing doc, update it there.
-  Don't spawn a second source of truth for the same contract.
+  Don't spawn a second source of truth for the same contract. `DEMO.md` is the
+  worked example of why: it held a second copy of the talk track, the copies
+  drifted, and the stale one told judges the demo moves MON months after that
+  stopped being true.
 - **Register new docs here.** A contract doc that isn't in this map is invisible
   to the next agent. Add it the moment it's created.
 - **Meta is an aid.** Anything under `docs/_meta/*` (generated indexes,

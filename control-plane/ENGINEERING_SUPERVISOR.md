@@ -522,3 +522,39 @@
 - **Remains:** FE-2 and FE-3 need the one wallet run. FE-4's keyboard, focus,
   contrast and projector checks. DEP-2 is Tejas's go/no-go, VER-1 and DEMO-1
   follow it.
+
+## 2026-07-26 — DEMO-1 (partial) — Pitch and fallback pack
+
+- **Owner:** Claude, lane branch `lane/demo-1-pitch`. Run ahead of VER-1 on
+  operator instruction.
+- **Read:** `docs/DEMO-OPERATIONS.md`, `docs/DEMO.md`,
+  `docs/OPEN-QUESTIONS.md` Q3/Q7/Q8/Q10/Q11, `docs/SECURITY.md` demo truth.
+- **The finding that justified the lane:** both demo docs still instructed the
+  presenter to say "100 MON", "cap 10 MON" and "Set amount to 5 MON". OP-1 Q8
+  answered months of work ago that amounts are abstract policy units precisely
+  so no judge concludes value moved, and the shipped UI stopped displaying MON
+  in FE-6. The pitch would have re-introduced the exact misreading the product
+  was built to avoid — spoken aloud, where it is least correctable.
+- **Changed:** rewrote `DEMO-OPERATIONS.md` against what actually shipped;
+  retired `DEMO.md` to a pointer; recorded the drift in `DOC-SYSTEM.md` as the
+  worked example of the amend-don't-fork rule.
+- **Timed, not estimated:** the track is 176 spoken words, about 70 seconds at
+  150 wpm, leaving roughly 20 seconds for clicks and transitions inside the
+  90-second budget.
+- **Preflight is executable** rather than a list of intentions: `cast` commands
+  with expected values, including `cast code | wc -c` so a wrong or dead address
+  is caught before a judge sees a blank identity panel.
+- **New fallback level, from a property of the build:** the denial is an
+  `eth_call`, so it needs no wallet and no signature. If the wallet fails on
+  stage, the deny half of the story is still genuinely live rather than a
+  recording — the ladder now says so, and still forbids presenting any recorded
+  level as live.
+- **Q&A rewritten around what a judge can check today:** that the denial is the
+  contract's own decision reproducible from a terminal, that the attestation id
+  is recomputable from the event alone, and the rotation replay limit stated as
+  a known limit rather than waited for.
+- **Docs updated:** `DEMO-OPERATIONS.md`, `DEMO.md` (retired),
+  `DOC-SYSTEM.md`, lane board, this log.
+- **Remains, and it is Tejas:** the backup recording on two devices, which
+  cannot be made until the wallet path has been run once (FE-3). DEP-2 go/no-go,
+  VER-1, SHIP-1.

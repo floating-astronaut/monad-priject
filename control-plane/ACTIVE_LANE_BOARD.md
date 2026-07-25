@@ -5,15 +5,10 @@
 
 ## Active
 
-### MG-1 — Hackathon MVP and repository bootstrap [IN VERIFICATION]
-
-Owner: Codex  
-Opened: 2026-07-25  
-Reading: `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/DEMO.md`  
-Acceptance: UI typecheck/build green; deny→allow demo observed; contract interface consistent; repository initialized and publish-ready  
-Write-back: product/architecture/demo docs, supervisor evidence, active lane board  
-Notes: GitHub publish is waiting on renewed `gh` authentication.
+_(no active lanes)_
 
 ## Recently closed
 
-- _none yet_
+- **MG-1 — Hackathon MVP and repository bootstrap** [CLOSED] — React demo,
+  Monad gate contract, ABI handoff, Vibe control plane, verified fail/pass flow,
+  and initial GitHub `main` branch shipped.

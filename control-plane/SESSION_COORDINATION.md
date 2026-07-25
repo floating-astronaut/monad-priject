@@ -4,4 +4,4 @@
 
 | Agent | Started | Lane | Surface | Status |
 |-------|---------|------|---------|--------|
-| Codex | 2026-07-25 | MG-1 | repo bootstrap, UI verification, publish | IN VERIFICATION |
+| _none_ | | | | |

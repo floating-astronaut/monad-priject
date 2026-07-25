@@ -23,10 +23,52 @@
     "forge": "1.7.1-monad-v1.0.0",
     "commit": "a34d85f45ce47f207a61571ef5fde15c3e0f29f7",
     "abiSha256": "7f95d3424a74029ac989fab81439abedfc51ecc81aff4ee0d41d6aaa85bb91fa",
-    "sourceVerified": false,
+    "sourceVerified": true,
     "explorer": {
       "contract": "https://testnet.monadvision.com/address/0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2",
-      "deployTx": "https://testnet.monadvision.com/tx/0xe8d138528b0620917745415599d10ac544298c4269e93e7c8b2b0d65406875ee"
+      "deployTx": "https://testnet.monadvision.com/tx/0xe8d138528b0620917745415599d10ac544298c4269e93e7c8b2b0d65406875ee",
+      "registerTx": "https://testnet.monadvision.com/tx/0xf8b86a234b8fa289e1fdde7a8c19419bc108a7d1c5b8a6f0247824484c30c8c0",
+      "policyTx": "https://testnet.monadvision.com/tx/0x0698117d27bfacbe0d0a4a8dcf4c69259d2c6113ca3583292cc5e9da03831dbb",
+      "passTx": "https://testnet.monadvision.com/tx/0x06366487826e9707a0b91d638c87733c0f68aad159d253484f8830fdf25df982"
+    },
+    "verification": {
+      "verifier": "sourcify",
+      "verifierUrl": "https://sourcify-api-monad.blockvision.org/",
+      "runtimeMatch": "exact_match",
+      "matchId": "544617",
+      "verifiedAt": "2026-07-25T18:04:46Z",
+      "jobId": "b0288c97-a865-4227-923e-38b26627bc85"
     }
+  },
+  "demoState": {
+    "note": "Preconfigured per OP-1 Q3. Amounts are abstract policy units per Q8 - no MON moves.",
+    "agentLabel": "Atlas",
+    "principal": "0xae06174FFd44850FAC43cf8F7D0ECB0848678071",
+    "agent": "0xd00e55Da854b53F02Ff0fe8DD6a35f68a14E2030",
+    "cap": 10,
+    "allowedActionId": "0x51eb1c386950e1c31f854f7cb2a140bf1b0ce3b0ad0d1f1f8ae197e77912cdc1",
+    "active": true,
+    "registerTx": "0xf8b86a234b8fa289e1fdde7a8c19419bc108a7d1c5b8a6f0247824484c30c8c0",
+    "policyTx": "0x0698117d27bfacbe0d0a4a8dcf4c69259d2c6113ca3583292cc5e9da03831dbb"
+  },
+  "proof": {
+    "deny": {
+      "attempt": 100,
+      "cap": 10,
+      "method": "cast call (no gas spent)",
+      "revert": "SpendCapExceeded(100, 10)",
+      "selector": "0x605cd727"
+    },
+    "pass": {
+      "attempt": 5,
+      "tx": "0x06366487826e9707a0b91d638c87733c0f68aad159d253484f8830fdf25df982",
+      "block": 48038351,
+      "gasUsed": 124348,
+      "attestationId": "0x6ef96971b12aa8b23858fb2be4b715ca98559856398a294bb5557d5a20fdb74a",
+      "resultHash": "0x4dc0a4d32e63d85fd7ba676c34229479c1ad2314c8fc933b06068378bb0393ad",
+      "event": "ActionAttested",
+      "eventTopic0": "0x0293aa86fd4ec23294d33bcee9ea8e664c937fe1ef6e09e02c6268abaea27aa8"
+    },
+    "limitation": "ActionAttested omits the nonce, so attestationId cannot be recomputed from the event alone. Open as BE-1b."
   }
 }

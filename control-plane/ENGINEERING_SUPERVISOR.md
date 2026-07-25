@@ -352,3 +352,52 @@
 - **Remains:** FE-3's one manual wallet run, now against the new address — and
   more worth doing than before, because the receipt will show the attestation id
   and nonce this lane added. ENV-2, BE-2, FE-2.
+
+## 2026-07-26 — BE-2 — Foundry verification suite
+
+- **Owner:** Claude, lane branch `lane/be-2-verification-suite`.
+- **Read:** `docs/TESTING.md`, `docs/MONAD-DEPLOYMENT.md`,
+  `docs/LOCAL-DEVELOPMENT.md`, the lane board's standing question about
+  `forge-std`.
+- **Decision the board asked BE-2 to make:** adopt `forge-std`, pinned at
+  v1.16.2 as a git submodule. Three test files each declared their own partial
+  `Vm` interface — one had `expectRevert()`, another `expectRevert(bytes)`, a
+  third `recordLogs` — and they had already drifted. Every new cheatcode meant
+  hand-editing an interface. The cost is that a clone now needs
+  `--recurse-submodules`; that is documented in two places and is the smaller
+  cost.
+- **Suite: 38 tests, 0 failures** (was 17). Added boundary cases (amount exactly
+  at cap, one above, zero amount, zero cap), every rejection path
+  (`PolicyInactive`, `ActionNotAllowed`, `AgentNotRegistered`, `ZeroAddress`),
+  `expectEmit` assertions on all three events including the BE-1b nonce field,
+  and a case proving a denial does not consume the result hash — without which a
+  corrected retry would be rejected as a replay.
+- **7 fuzz properties**, each stated so a counterexample is a real finding:
+  above-cap never attests for any cap and any amount; within-cap always attests;
+  unregistered senders never attest; non-principals never mutate policy; action
+  mismatch never attests; replay always rejected; registration cannot be seized.
+- **2 stateful invariants, the strongest evidence in this lane.** A handler
+  drives the gate with arbitrary amounts, wrong action ids and stranger callers.
+  128,000 calls per run, and `attestationNonce` must equal the number of calls
+  the contract actually accepted. This is what backs BE-1b: an attestation id is
+  only reconstructible off chain if the nonce advances exactly on success, and a
+  nonce that moved on a rejected call would leave gaps a verifier could not
+  explain. The second invariant holds identity immutable under all of it.
+- **Gas snapshot** committed at `contracts/.gas-snapshot` (37 entries).
+  `forge snapshot --check` is now a documented gate, so an unexplained gas
+  change fails rather than passing silently. Fuzz and invariant runs are pinned
+  in `foundry.toml` so a run here and a run elsewhere mean the same thing.
+- **Migration was faithful, not a rewrite:** every original test name and
+  assertion was preserved; `require(cond, msg)` became `assertTrue(cond, msg)`
+  so failures report through forge-std. The 17 pre-existing tests still pass.
+- **Found in passing:** `LOCAL-DEVELOPMENT.md` still told a new contributor to
+  clone `Taurus-Ai-Corp/MONAD-Gate-`. Corrected, along with adding the submodule
+  step. This is the second doc caught pointing at that repo.
+- **Stated plainly in `TESTING.md`:** the frontend and browser test lists are
+  still not automated. There is no test runner in `ui/` and adding one was not
+  this lane; `npm run check` is the only automated frontend gate today.
+- **Docs updated:** `TESTING.md` (suite status, clean-machine commands,
+  requirement-to-test map), `LOCAL-DEVELOPMENT.md`, lane board, session
+  coordination, this log.
+- **Remains:** FE-3's one manual wallet run, ENV-2, FE-2. No backend lane is
+  open.

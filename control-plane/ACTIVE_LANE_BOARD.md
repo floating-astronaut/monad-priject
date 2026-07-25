@@ -35,22 +35,6 @@ confirm the receipt links to the tx on MonadVision. The same path already
 succeeded via `cast` in BE-4, so the contract side is proven; what is unproven
 is the browser signing path.
 
-### FE-6 — Amounts must read as policy units, not MON [OPEN]
-
-Owner: Claude
-Opened: 2026-07-26
-Reading: `docs/OPEN-QUESTIONS.md` Q8, `docs/SECURITY.md` demo truth
-Acceptance: no "MON" string appears next to a policy amount anywhere in the UI;
-amounts render as policy units; the cap, the slider bounds, and the result copy
-all agree
-Notes: found during DEP-1 browser verification of the deployed site. The live
-page currently renders "100 MON", "CAP 10", "120 MON" and "Run the 100 MON
-action first". OP-1 Q8 answered this explicitly: amounts are **abstract policy
-units**, "no MON figures are displayed and no decimal conversion exists
-anywhere, so no judge can conclude that value moved." The deployed UI
-contradicts that answer, and it is exactly the misreading Q8 was written to
-prevent. Judge-facing, so worth fixing before the pitch.
-
 ### DEP-1 — Cloudflare preview [IN PROGRESS]
 
 Owner: Claude
@@ -83,20 +67,22 @@ GitHub source is now mirrored three ways (private Taurus-Ai-Corp, private
 GitLab, public floating-astronaut) — pick which remote Pages builds from
 before wiring it.
 
-### BE-2 — Foundry verification suite [OPEN]
-
-Owner: Claude
-Opened: 2026-07-26
-Depends on: BE-1 (closed)
-Reading: `docs/TESTING.md`, `docs/MONAD-DEPLOYMENT.md`
-Acceptance: unit/fuzz boundaries, event assertions, gas snapshot green under
-Monad Foundry; clean-machine commands documented
-Notes: BE-1 left 14 hand-rolled tests using a local `Vm` interface rather than
-`forge-std`. BE-2 should decide whether to adopt `forge-std` before the suite
-grows further.
-
 ## Recently closed
 
+- **BE-2 — Foundry verification suite** [CLOSED 2026-07-26] — 38 tests, 0
+  failures, up from 17. Added boundary cases (at cap, one above, zero amount,
+  zero cap), every rejection path, `expectEmit` assertions on all three events,
+  7 fuzz properties, and **2 stateful invariants** driven by a handler at
+  128,000 calls per run: the nonce equals the number of actions the contract
+  actually accepted, and identity never changes under arbitrary agent activity.
+  Gas snapshot committed at `contracts/.gas-snapshot`; `forge snapshot --check`
+  is now a gate. Fuzz/invariant runs pinned in `foundry.toml`.
+  **Decision the board asked for:** adopted `forge-std`, pinned at v1.16.2 as a
+  submodule. Three test files each declared their own partial `Vm` interface and
+  had already drifted; that cost was going to compound as the suite grew. Clones
+  now need `--recurse-submodules`, which is documented.
+  Also corrected the clone URL in `LOCAL-DEVELOPMENT.md`, which still pointed at
+  the repo this project no longer works in.
 - **BE-1b — Attestation nonce in event** [CLOSED 2026-07-26] — `ActionAttested`
   now carries the nonce, so `attestationId` is recomputable off chain from the
   log alone. Three new tests, all red against the previous contract and green

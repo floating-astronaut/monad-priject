@@ -19,8 +19,8 @@ Source: [Monad Foundry guide](https://docs.monad.xyz/guides/deploy-smart-contrac
 ## Clone and orient
 
 ```bash
-git clone https://github.com/Taurus-Ai-Corp/MONAD-Gate-.git
-cd MONAD-Gate-
+git clone --recurse-submodules https://github.com/floating-astronaut/monad-priject.git
+cd monad-priject
 git status
 cat docs/DOC-SYSTEM.md
 cat control-plane/ACTIVE_LANE_BOARD.md
@@ -57,8 +57,20 @@ forge --version
 forge fmt --check
 forge build
 forge test -vvv
-forge snapshot
+forge snapshot --check
 ```
+
+`forge-std` is a git submodule (BE-2). A clone made without
+`--recurse-submodules` will fail to build with a missing `forge-std/Test.sol`.
+Fix an existing clone with:
+
+```bash
+git submodule update --init --recursive
+```
+
+`forge snapshot --check` compares against the committed `contracts/.gas-snapshot`
+and fails if gas moved. Regenerate with `forge snapshot` and commit the diff when
+the change is intended.
 
 Start local chain with `anvil`; dry-run deployment locally before testnet.
 Claude owns the exact script command. Reference Foundry accounts/keystores,

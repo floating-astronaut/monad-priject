@@ -79,39 +79,34 @@ roughly 75 px of every panel was cut off, including the identity addresses.
 Fixed. The rest of the acceptance list — keyboard, focus order, contrast,
 projector — is untested.
 
-### DEP-1 — Cloudflare preview [IN PROGRESS]
-
-Owner: Claude
-Opened: 2026-07-26
-Depends on: FE-3 (not met — run early on operator instruction), ENV-2
-Acceptance: Git preview builds from `ui/`, public env correct, SPA fallback and
-console checks pass
-Notes: site is **live** at https://monad-gate.pages.dev (deployment
-`c6f2ae8b-5624-4750-8f71-196e8bfa9dd8`, source `fd798de`) by Wrangler direct
-upload. SPA fallback works, bundle byte-matches the local build, console clean.
-Two reasons the lane is not closed:
-1. **Not Git-connected** — needs the dashboard OAuth in ENV-2, so no per-branch
-   preview builds yet. Every deploy is manual from the box.
-2. **The page is still in safe demo mode.** `VITE_GATE_ADDRESS` is baked into
-   the bundle, but the UI shows the placeholder actors `0xA6E1…6E17` /
-   `0xA11C…11CE`, not the real registered agent. Wiring it to the live contract
-   is FE-2/FE-3. The page does disclose "Safe demo mode · no funds will move",
-   so nothing on it is dishonest — but it is not yet proof of anything on chain.
-
-### ENV-2 — Cloudflare and GitHub access [OPEN]
-
-Owner: Tejas
-Opened: 2026-07-26
-Reading: `docs/CLOUDFLARE-DEPLOYMENT.md`, `docs/OPEN-QUESTIONS.md` Q5
-Acceptance: the Cloudflare account named in OP-1 Q5 can build this repo from
-Git; a Pages project exists and is bound to the correct branch
-Notes: split out of ENV-1 on 2026-07-26 — see `docs/IMPLEMENTATION-LANES.md`.
-Blocks DEP-1 only; nothing on the chain path waits on it. Unstarted. The
-GitHub source is now mirrored three ways (private Taurus-Ai-Corp, private
-GitLab, public floating-astronaut) — pick which remote Pages builds from
-before wiring it.
-
 ## Recently closed
+
+- **ENV-2 — Cloudflare and GitHub access** [CLOSED 2026-07-26] — Tejas
+  authorised the Cloudflare GitHub App. Project `monad-gate` is bound to
+  `floating-astronaut/monad-priject`, production branch `main`, root `ui`, build
+  `npm run build`, output `dist`, previews enabled for all branches. Verified
+  through the Cloudflare API, not the dashboard screenshot.
+- **DEP-1 — Cloudflare preview** [CLOSED 2026-07-26] — every acceptance item
+  met and checked against the live site:
+  Git build from `ui/` — production deployment `831d98c6` built from `main`
+  `c862d6a`; **per-branch preview proven** — pushing `lane/dep-1-close` produced
+  preview `2d078df8` automatically.
+  Public env correct — the served bundle carries the live contract
+  `0x6e93CE34…F908` and zero occurrences of the superseded address; a local
+  build of `main` produces byte-identical asset hashes, so production is
+  reproducible from the repo.
+  SPA fallback — `/` and a deep link both return 200 with the app shell.
+  Console — clean, no errors, no Vite overlay.
+  ⚠️ **Known limitation, accepted:** a request for a missing file under
+  `/assets/` returns the SPA shell with status 200 rather than a 404. Two fixes
+  were tried and both failed on Cloudflare Pages: a `404` status rule in
+  `_redirects` is ignored unless it targets a literally-named `404.html`, and
+  adding `404.html` makes Pages serve it for *all* unmatched paths, which breaks
+  the SPA fallback. Getting both behaviours needs a Pages Function, and
+  `ARCHITECTURE.md` plus the Worker decision gate in `CLOUDFLARE-DEPLOYMENT.md`
+  say no Worker without Tejas approving one. Impact is small: the app has no
+  client-side router and ships a single unsplit bundle, so a stale asset request
+  means a full page load, which fetches the current `index.html` anyway.
 
 - **BE-2 — Foundry verification suite** [CLOSED 2026-07-26] — 38 tests, 0
   failures, up from 17. Added boundary cases (at cap, one above, zero amount,

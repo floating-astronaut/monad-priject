@@ -34,6 +34,7 @@ import {
   fetchRecentAttestations,
   gateContract,
   isValidAddress,
+  readContract,
   LIVE,
   resultHash,
   shortAddress,
@@ -75,6 +76,12 @@ function describeGateError(name: string, amount: number, cap: number) {
       return "This is not the action the policy allows.";
     case "ResultAlreadyAttested":
       return "This exact result was already attested — replay rejected.";
+    case "PrincipalIsAgent":
+      return "You are connected as the agent. Registration must be signed by the principal, and an agent can never be its own principal.";
+    case "AgentAlreadyRegistered":
+      return "That agent is already registered. Change the agent address to register a new one, or use the policy controls below.";
+    case "NotPrincipal":
+      return "Only the principal that registered this agent may do that.";
     default:
       return "The gate rejected this action.";
   }
@@ -226,10 +233,8 @@ function App() {
   /** Shared write path: connect, verify the chain, submit, then confirm. */
   async function runSetup(
     action: string,
-    call: (
-      contract: ReturnType<typeof gateContract>,
-      from: string,
-    ) => Promise<{ hash: string; wait: () => Promise<unknown> }>,
+    method: "registerAgent" | "setPolicy",
+    buildArgs: (from: string) => unknown[],
   ) {
     setSetupBusy(action);
     setSetupStage("");
@@ -253,7 +258,20 @@ function App() {
 
       // Use the address just returned by the wallet, never the `wallet` state:
       // on the first click that state is still empty inside this closure.
-      const tx = await call(gateContract(connected.signer), connected.address);
+      const args = buildArgs(connected.address);
+
+      // Ask the contract first. Connecting costs nothing, so a write that will
+      // revert should be reported here rather than after a signature — the old
+      // behaviour made you sign, wait, and then read a raw custom error.
+      await (readContract() as unknown as Record<string, { staticCall: (...a: unknown[]) => Promise<unknown> }>)[
+        method
+      ].staticCall(...args, { from: connected.address });
+
+      const contract = gateContract(connected.signer) as unknown as Record<
+        string,
+        (...a: unknown[]) => Promise<{ hash: string; wait: () => Promise<unknown> }>
+      >;
+      const tx = await contract[method](...args);
       setSetupHash(tx.hash);
       setSetupStage("submitted");
       setSetupMessage(`${action} submitted`);
@@ -269,8 +287,15 @@ function App() {
       setMaxSpend(refreshed.cap);
     } catch (error) {
       const decoded = decodeGateError(error);
+      const plain = describeGateError(decoded.error, setupCap, maxSpend);
       setSetupStage("error");
-      setSetupMessage(decoded.detail);
+      // Lead with why, keep the contract's own error after it — the audience
+      // for this panel wants both.
+      setSetupMessage(
+        plain === "The gate rejected this action."
+          ? decoded.detail
+          : `${plain} (${decoded.detail})`,
+      );
     } finally {
       setSetupBusy("");
     }
@@ -544,13 +569,25 @@ function App() {
                     />
                   </label>
 
+                  {liveMode && chain?.registered &&
+                    setupAgent.toLowerCase() === chain.agent.toLowerCase() && (
+                    <p className="run-caption" style={{ marginTop: 0 }}>
+                      {chain.label || "This agent"} is already registered to{" "}
+                      {shortAddress(chain.principal)}, so <b>Register</b> will be refused —
+                      change the agent address to register a new one. Policy controls below
+                      work as normal.
+                    </p>
+                  )}
+
                   <div className="setup-actions">
                     <button
                       disabled={!liveMode || Boolean(setupBusy)}
                       onClick={() =>
-                        runSetup("Registration", (c, from) =>
-                          c.registerAgent(setupAgent, from, setupLabel),
-                        )
+                        runSetup("Registration", "registerAgent", (from) => [
+                          setupAgent,
+                          from,
+                          setupLabel,
+                        ])
                       }
                     >
                       {setupBusy === "Registration" ? <RefreshCw className="spin" size={14} /> : <Fingerprint size={14} />}
@@ -559,7 +596,7 @@ function App() {
                     <button
                       disabled={!liveMode || Boolean(setupBusy)}
                       onClick={() =>
-                        runSetup("Policy", (c) => c.setPolicy(setupAgent, setupCap, ACTION_ID, true))
+                        runSetup("Policy", "setPolicy", () => [setupAgent, setupCap, ACTION_ID, true])
                       }
                     >
                       {setupBusy === "Policy" ? <RefreshCw className="spin" size={14} /> : <Gauge size={14} />}
@@ -568,9 +605,12 @@ function App() {
                     <button
                       disabled={!liveMode || Boolean(setupBusy)}
                       onClick={() =>
-                        runSetup(policyActive ? "Pause" : "Resume", (c) =>
-                          c.setPolicy(setupAgent, setupCap, ACTION_ID, !policyActive),
-                        )
+                        runSetup(policyActive ? "Pause" : "Resume", "setPolicy", () => [
+                          setupAgent,
+                          setupCap,
+                          ACTION_ID,
+                          !policyActive,
+                        ])
                       }
                     >
                       {setupBusy === "Pause" || setupBusy === "Resume" ? (

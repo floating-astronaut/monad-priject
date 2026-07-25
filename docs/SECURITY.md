@@ -49,6 +49,12 @@ let any agent burn another agent's result hash. Operator decision.
 | Private key or seed | Yes | encrypted wallet/Foundry keystore |
 | Cloudflare token | Yes | Cloudflare/CI secret store |
 | Explorer API key | Usually | local/CI secret, never frontend |
+| Google service-account key | Yes | build box only, outside the repo tree |
+| Operator sheet ID | Kept out of Git | `MONAD_SHEET_ID` / `~/.monad-gate/sheet.env` |
+
+One GitHub mirror of this repo is **public**
+(`github.com/floating-astronaut/monad-priject`). Treat every tracked file as
+world-readable: no IDs, endpoints, or internal URLs that are not meant to be.
 
 ## Burner wallets (ENV-1, 2026-07-26)
 

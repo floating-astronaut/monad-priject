@@ -55,6 +55,24 @@ precedence, so an agent never guesses where the truth lives.
   control plane.
 - Any mutable external fact: verify against `SOURCES.md`.
 
+## Generated views
+
+A read-only mirror of the control plane is published to a Google Sheet
+("Monad Blitz") so Tejas can watch state without reading markdown.
+
+- Generator: `tools/sheet_sync.py`, run on the build box with
+  `~/.venvs/monad-sheets/bin/python tools/sheet_sync.py`.
+- Tabs: Status, Lanes, Chain, Decisions, Evidence — all derived from
+  `control-plane/ACTIVE_LANE_BOARD.md`, `docs/OPEN-QUESTIONS.md`,
+  `control-plane/ENGINEERING_SUPERVISOR.md`, `packages/abi/addresses.json`,
+  and live `cast balance` calls.
+- **One way, repo to sheet.** The sheet sits at precedence 6 (generated/meta):
+  it never overrides an owning doc, and an edit made in the sheet is discarded
+  on the next run. Change the doc, then re-run the sync.
+- Access is by explicit grant (owner + one service account); the sheet ID lives
+  in `MONAD_SHEET_ID` or `~/.monad-gate/sheet.env`, never in this repo, because
+  the GitHub mirror is public.
+
 ## Rules
 
 - **Amend, don't fork.** If a fact belongs in an existing doc, update it there.

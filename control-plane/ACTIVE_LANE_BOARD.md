@@ -103,8 +103,10 @@ before wiring it.
   (`0x06366487…f982`) emitting `ActionAttested` bound to agent, principal,
   action, amount and result hash. Demo state is now preconfigured on chain per
   OP-1 Q3. Explorer URLs recorded in the manifest.
-  Still true: `ActionAttested` omits the nonce (BE-1b), so `attestationId` is
-  not recomputable off-chain from the event alone.
+  ⚠️ **Superseded 2026-07-26.** Every address, tx and verification in this entry
+  belongs to the pre-BE-1b contract and is dead. BE-1b landed the nonce, so the
+  closing sentence of this entry — that `attestationId` is not recomputable off
+  chain — is no longer true. Live values are in `packages/abi/addresses.json`.
 - **FE-6 — Amounts read as policy units** [CLOSED 2026-07-26] — every amount in
   the UI is now labelled in policy units: the cap field, the action input, the
   slider bounds, the denial copy, the attestation receipt and the audit strip.

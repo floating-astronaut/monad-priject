@@ -153,7 +153,7 @@ Have this on screen or on paper:
 
 ```text
 Live      https://monad-gate.pages.dev
-Repo      https://github.com/floating-astronaut/monad-priject
+Repo      https://github.com/floating-astronaut/monad-project
 Contract  0x6e93CE34DB89Cf14C1846Ea65967f5506477F908   (Sourcify exact_match)
 Deploy tx 0x047764f4e78306050569846b7bc3fcffe89277af8f2465acd960dd8d7da9f1a1
 Proof tx  0x74f68eb7de5246d7fbfcdab49794210e48163cc33040048c5e396cdfcc9ab688

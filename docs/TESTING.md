@@ -29,8 +29,8 @@ Fuzz/invariants:
 Clean-machine commands — no tribal knowledge, no environment variables:
 
 ```bash
-git clone --recurse-submodules https://github.com/floating-astronaut/monad-priject.git
-cd monad-priject/contracts
+git clone --recurse-submodules https://github.com/floating-astronaut/monad-project.git
+cd monad-project/contracts
 forge fmt --check
 forge build
 forge test

@@ -3,6 +3,11 @@
 Tejas opens lanes in this order. Only lanes with satisfied dependencies may be
 claimed. One owner per surface.
 
+> Roster note (2026-07-25): Codex left the project; all lanes it owned were
+> reassigned to Claude. Ordering and dependencies are unchanged. FE lanes no
+> longer run truly parallel to BE lanes — one agent works them in sequence, so
+> the critical path is longer than this graph implies. See `ROLES.md`.
+
 ## Phase A — decisions and environment
 
 ### OP-1 — Operator decisions
@@ -45,34 +50,34 @@ manifest records chain, contract, deploy tx, action ID, compiler, commit.
 Owner: Claude  
 Depends on: BE-3  
 Acceptance: source verified; principal register/policy and agent deny/pass
-reproduced with `cast`; explorer URLs handed to Codex.
+reproduced with `cast`; explorer URLs recorded in the address manifest.
 
 ## Phase C — frontend
 
 ### FE-1 — Frontend architecture cleanup
 
-Owner: Codex  
+Owner: Claude  
 Parallel with: BE-1/BE-2 using frozen mock ABI  
 Acceptance: setup/action/simulation modes separated; no demo monolith;
 typecheck green.
 
 ### FE-2 — Principal setup flow
 
-Owner: Codex  
+Owner: Claude  
 Depends on: ABI freeze  
 Acceptance: correct-chain wallet can register and set/pause policy; UI shows
 submission, receipt, and decoded errors.
 
 ### FE-3 — Agent fail/pass flow
 
-Owner: Codex  
+Owner: Claude  
 Depends on: BE-4 handoff  
 Acceptance: distinct agent shows real over-cap denial, successful attestation,
 and explorer proof; simulated hash never appears live.
 
 ### FE-4 — Responsive/accessibility polish
 
-Owner: Codex  
+Owner: Claude  
 Depends on: FE-2, FE-3  
 Acceptance: projector, 375 px phone, keyboard, focus, contrast, disabled/loading,
 and reduced-motion checks pass.
@@ -81,28 +86,28 @@ and reduced-motion checks pass.
 
 ### DEP-1 — Cloudflare preview
 
-Owner: Codex  
+Owner: Claude  
 Depends on: FE-3  
 Acceptance: Git preview builds from `ui/`, public env correct, SPA fallback and
 console checks pass.
 
 ### DEP-2 — Cloudflare production
 
-Owner: Codex  
+Owner: Claude  
 Depends on: FE-4, Tejas go/no-go  
 Acceptance: `main` deployment recorded; SHA matches; wallet, deny/pass, explorer
 smoke green.
 
 ### VER-1 — Full-story verification
 
-Owner: Codex  
+Owner: Claude  
 Depends on: BE-4, DEP-2  
 Acceptance: independently checks backend claims and production demo from fresh
 browser profile with observed evidence.
 
 ### DEMO-1 — Pitch and fallback pack
 
-Owner: Codex  
+Owner: Claude  
 Depends on: VER-1  
 Acceptance: live talk track under 90 seconds, backup video on two devices,
 URLs/addresses/README ready.
@@ -115,9 +120,9 @@ Acceptance: submission sent; only Tejas may authorize production hotfix.
 
 ## Kill switches
 
-- Contract deploy blocked: Claude uses Anvil truthfully; Codex uses simulation;
+- Contract deploy blocked: Claude uses Anvil truthfully and the UI falls back to simulation;
   Tejas retries deployment with mentor.
-- Cloudflare Git deploy blocked: Codex direct-uploads `ui/dist` with Wrangler.
+- Cloudflare Git deploy blocked: Claude direct-uploads `ui/dist` with Wrangler.
 - Wallet blocked: clean browser profile or second laptop.
 - RPC unstable: switch only to a provider on the current Monad network page.
 - Explorer delayed: show hash and `cast receipt`; do not claim source verified

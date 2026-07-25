@@ -31,41 +31,57 @@ Tejas does not need to implement code. Agents must present decisions in
 Claude may not change frontend UX or the frozen ABI without a handoff and Tejas
 approval.
 
-## Codex — frontend, deployment, verifier, and finisher
+## Codex — withdrawn 2026-07-25
 
-**Owns:**
+Codex is no longer on the roster; its budget was exhausted after DOC-1. Its
+surfaces transfer to Claude: React UI, wallet and transaction UX, Cloudflare
+Pages deployment, browser verification, and demo polish.
+
+Codex's committed work stands (MG-1 MVP, DOC-1 doc system). Nothing is reverted.
+
+## Claude — additionally, frontend and deployment (from 2026-07-25)
+
+**Also owns, inherited from Codex:**
 
 - React UI, wallet UX, transaction-state UX, accessibility, responsive polish;
-- ABI consumption after Claude's handoff;
 - Cloudflare Pages configuration, previews, production deploy, and smoke tests;
 - browser verification of every judge-facing state;
-- demo choreography, backup recording checklist, and submission polish;
-- independent verification of Claude's backend claims.
+- demo choreography, backup recording checklist, and submission polish.
 
-Codex does not implement Solidity except for an explicit emergency lane from
-Tejas.
+## Verification gap — read this
+
+The roster no longer contains an independent verifier. Claude now builds and
+checks its own work, which is the weakest arrangement for catching its own
+mistakes.
+
+Compensating rule: every lane's acceptance check must be **mechanical and
+operator-reproducible** — a Foundry test run, a headless browser probe, an
+explorer URL, a build exit code. Evidence in `ENGINEERING_SUPERVISOR.md` must be
+something Tejas can re-run and see for himself. Narrative assurance ("verified
+working") is not acceptable evidence under a single-agent roster.
 
 ## The split in one line
 
-> **Tejas directs. Claude builds the chain and backend. Codex builds and deploys
-> the frontend, then verifies and polishes the full story.**
+> **Tejas directs and verifies. Claude builds and deploys everything: chain,
+> backend, frontend, and hosting.**
 
 ## Rules
 
 - One lane, one owner.
 - Tejas is the only orchestrator and final decision maker.
 - The owner closes the lane with docs, board status, and evidence.
-- Cross-surface changes require a clean handoff.
+- Acceptance checks must be mechanical and reproducible by Tejas.
 - Kimi is not part of the active roster for this hackathon.
 
-## Handoff boundary
+## Interface boundary
 
-Claude hands Codex only:
+The ABI handoff no longer crosses agents, but the boundary is kept as a
+discipline: the UI consumes the contract only through
 
 - `packages/abi/gate.json`;
 - `packages/abi/addresses.json`;
-- deployed contract and deployment transaction URLs;
-- a green backend verification summary;
-- exact revert/error names the UI must render.
+- the exact revert/error names the UI must render.
 
-Codex treats that interface as frozen. Tejas arbitrates any requested change.
+Claude does not let frontend convenience reshape the contract. Changing the
+frozen interface still requires an operator decision and an `ARCHITECTURE.md`
+update, exactly as when two agents were active.

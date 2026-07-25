@@ -23,6 +23,20 @@ principal signs registration and policy changes. The registered agent signs
 Before deployment, identity overwrite/rotation semantics must be hardened per
 `BUILD-SPEC.md` and `SECURITY.md`.
 
+**Identity lifecycle (OP-1 Q1, decided 2026-07-25).** Registration binds an
+agent to a principal. Only the current principal may rotate that binding, change
+policy, or deactivate. An unrelated caller may never overwrite an existing
+registration. No agent-side kill switch in the MVP. The concrete function
+surface implementing this is BE-1 design work and must be added to the frozen
+interface below, with operator sign-off, before implementation.
+
+**Replay (OP-1 Q9).** `executeGated` rejects a `resultHash` that has already
+been attested, with a dedicated revert name the UI renders.
+
+**Units (OP-1 Q8).** `maxSpend` and `amount` are abstract policy units — plain
+integers, no decimals, no MON conversion. The UI labels them "policy units". No
+MON-denominated figure is displayed anywhere.
+
 ### Cloudflare Pages
 
 Serves the built static SPA from `ui/dist` using Git integration. It holds only
@@ -47,6 +61,12 @@ executeGated(bytes32 actionId, uint256 amount, bytes32 resultHash)
 
 No new Solidity surface is added without an operator decision and a matching
 update to this document.
+
+**Pending addition (BE-1).** OP-1 Q1 authorized principal-controlled rotation
+and deactivation; the function signatures that implement it are not yet chosen
+and are therefore not yet frozen. BE-1 proposes them here for operator sign-off
+before writing the implementation. Until that happens, the three signatures
+above remain the whole surface.
 
 ## Trust boundary
 
@@ -81,7 +101,9 @@ testnet has previously reset.
 ## Deployment boundary
 
 - Monad contract and explorer verification: Claude.
-- ABI/address handoff: Claude → Codex.
-- Cloudflare Pages and frontend public config: Codex.
+- Cloudflare Pages and frontend public config: Claude (was Codex; roster changed
+  2026-07-25 — see `ROLES.md`). Existing box Cloudflare account, `*.pages.dev`,
+  no custom domain for the MVP (OP-1 Q5).
 - Credentials, funding, and production go/no-go: Tejas.
 - A Cloudflare Worker requires a new approved architecture lane.
+- Lane branches merged to `main` by PR, preview deploy per branch (OP-1 Q6).

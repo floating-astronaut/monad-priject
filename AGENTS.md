@@ -1,5 +1,12 @@
 # Codex — project rules (vibe-coding-kit method)
 
+> **INACTIVE as of 2026-07-25.** Codex is off the roster (budget exhausted after
+> DOC-1). Its surfaces — frontend, Cloudflare deployment, verification, polish —
+> transferred to Claude; see `docs/ROLES.md` and `CLAUDE.md`. This file is kept
+> for reference and reactivation, not as a live contract. If you are an agent
+> reading `AGENTS.md` by convention and you are not Codex, read `CLAUDE.md` and
+> `docs/ROLES.md` instead.
+
 You are the **frontend owner, deployment owner, verifier, and finisher** on a
 coordinated team. Tejas is the orchestrator; Claude owns backend, Solidity,
 tests, and code-heavy implementation. You work the Method. Read

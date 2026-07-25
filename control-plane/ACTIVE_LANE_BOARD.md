@@ -94,6 +94,17 @@ before wiring it.
   superseded and recorded as such in the manifest.
   **Proved against the live chain, not only in tests:** the id recomputed off
   chain from the emitted event equals the id in the log.
+- **BE-4 — Explorer verification and CLI proof** [CLOSED 2026-07-26] — source
+  verified on Sourcify, `runtimeMatch: exact_match`, match 544617. Full story
+  reproduced with `cast` against the live contract: principal registered agent
+  "Atlas" (`0xf8b86a23…c8c0`), set cap 10 on `TRANSFER_MOCK`
+  (`0x0698117d…1dbb`), agent's 100-unit attempt reverted
+  `SpendCapExceeded(100, 10)`, agent's 5-unit attempt succeeded
+  (`0x06366487…f982`) emitting `ActionAttested` bound to agent, principal,
+  action, amount and result hash. Demo state is now preconfigured on chain per
+  OP-1 Q3. Explorer URLs recorded in the manifest.
+  Still true: `ActionAttested` omits the nonce (BE-1b), so `attestationId` is
+  not recomputable off-chain from the event alone.
 - **FE-6 — Amounts read as policy units** [CLOSED 2026-07-26] — every amount in
   the UI is now labelled in policy units: the cap field, the action input, the
   slider bounds, the denial copy, the attestation receipt and the audit strip.

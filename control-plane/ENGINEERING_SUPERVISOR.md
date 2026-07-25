@@ -630,3 +630,28 @@
   the recomputability claim would be false there. Reported to Tejas; the repo is
   not ours to change.
 - **Docs updated:** lane board, this log.
+
+## 2026-07-26 — FE-9 — Full refusal surface and deck link
+
+- **Owner:** Claude, lane branch `lane/fe-9-more-scenarios`.
+- **Changed:** three more scenarios (undelegated action, replay, boundary walk)
+  and a Deck link in the header. Five scenarios now, covering every refusal path
+  reachable without changing state.
+- **Verified on the deployed contract, all five, zero allowed:** `NotPrincipal`
+  twice, `ActionNotAllowed`, `ResultAlreadyAttested(agent, hash)`, and the
+  boundary returning allowed at 9, allowed at 10, `SpendCapExceeded(11, 10)` at
+  11 — which shows the cap is inclusive and the edge sits exactly where the
+  principal put it.
+- **Two deliberate differences from the source branch:** the undelegated action
+  uses the real `keccak("DRAIN_TREASURY")`, not the fabricated placeholder that
+  branch hardcoded — a judge who hashes the string gets a match. And the replay
+  scenario reuses the result hash from the BE-1b proof transaction, permanently
+  spent on chain, so the demonstration works at any time without first spending
+  a fresh one.
+- **Not demonstrated, and why:** `PolicyInactive` needs the policy actually
+  paused. That is a state change, so it belongs to Principal controls rather
+  than a read-only panel, and pausing before a demo is a bad idea.
+- **Also:** merged PRs #2 and #3 on `Taurus-Ai-Corp/MONAD-Gate-` at Tejas's
+  explicit instruction, lifting the earlier hands-off rule for those two merges
+  only. Nothing else on that repo was touched.
+- **Docs updated:** lane board, this log.

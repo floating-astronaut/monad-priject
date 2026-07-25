@@ -23,7 +23,9 @@ import {
   ACTION_ID,
   AGENT_ADDRESS,
   attemptLiabilityAssignment,
+  attemptReplay,
   attemptSelfEscalation,
+  attemptUndelegatedAction,
   assertCorrectChain,
   connectWallet,
   decodeGateError,
@@ -38,7 +40,8 @@ import {
   parseAttestation,
   simulateGate,
 } from "./gate";
-import type { AttackResult, ChainAttestation, ChainState } from "./gate";
+import { walkBoundary } from "./gate";
+import type { AttackResult, BoundaryStep, ChainAttestation, ChainState } from "./gate";
 
 type StepState = "done" | "active" | "idle";
 type Receipt = {
@@ -100,6 +103,16 @@ function App() {
   // cap answers "how much"; these answer "who decides" — which is the part a
   // compromised agent actually attacks.
   const [attacks, setAttacks] = useState<Record<string, AttackResult | "running">>({});
+  const [boundary, setBoundary] = useState<BoundaryStep[] | "running" | null>(null);
+
+  async function runBoundary() {
+    setBoundary("running");
+    try {
+      setBoundary(await walkBoundary(agent, maxSpend));
+    } catch {
+      setBoundary(null);
+    }
+  }
 
   async function runAttack(key: string, run: () => Promise<AttackResult>) {
     setAttacks((prev) => ({ ...prev, [key]: "running" }));
@@ -391,6 +404,7 @@ function App() {
           <span className="brand-light">Gate</span>
         </a>
         <div className="topbar-right">
+          <a className="nav-link" href="/deck">Deck</a>
           <span className="network-pill"><span className="live-dot" /> Monad Testnet</span>
           <button className="wallet-button" onClick={onConnect} disabled={connecting}>
             {connecting ? <RefreshCw className="spin" size={16} /> : <Wallet size={16} />}
@@ -613,6 +627,20 @@ function App() {
                   why: "Liability has to be accepted. This is the whole product.",
                   run: () => attemptLiabilityAssignment(principal || AGENT_ADDRESS),
                 },
+                {
+                  key: "undelegated",
+                  title: "The bot calls an action it was never delegated",
+                  sub: "executeGated · DRAIN_TREASURY",
+                  why: "Scope is enumerated, not assumed.",
+                  run: () => attemptUndelegatedAction(agent),
+                },
+                {
+                  key: "replay",
+                  title: "The bot replays a result it already attested",
+                  sub: "executeGated · a result hash spent earlier",
+                  why: "Each attestation is a provably unique action.",
+                  run: () => attemptReplay(agent),
+                },
               ].map((a) => {
                 const result = attacks[a.key];
                 return (
@@ -643,6 +671,36 @@ function App() {
                   </div>
                 );
               })}
+              <div className="attack-row">
+                <button
+                  className="attack-button"
+                  disabled={!liveMode || boundary === "running"}
+                  onClick={runBoundary}
+                >
+                  <strong>Walk the boundary — {Math.max(0, maxSpend - 1)}, {maxSpend}, {maxSpend + 1}</strong>
+                  <em>three calls · finds the exact edge of authority</em>
+                </button>
+                {boundary === "running" && (
+                  <div className="attack-result pending">
+                    <RefreshCw className="spin" size={13} /> asking the contract…
+                  </div>
+                )}
+                {Array.isArray(boundary) && (
+                  <div className="attack-result refused boundary-result">
+                    {boundary.map((step) => (
+                      <div className="boundary-step" key={step.amount}>
+                        <span className={`boundary-chip ${step.allowed ? "ok" : "no"}`}>
+                          {step.allowed ? <Check size={11} /> : <X size={11} />} {step.amount}
+                        </span>
+                        <code>{step.detail}</code>
+                      </div>
+                    ))}
+                    <span className="attack-why">
+                      The edge is exactly where the principal put it — not one unit either side.
+                    </span>
+                  </div>
+                )}
+              </div>
             </article>
 
             <div className="principle-note">

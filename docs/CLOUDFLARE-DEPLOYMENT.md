@@ -1,6 +1,6 @@
 # Cloudflare Pages Deployment Runbook
 
-Owner: Codex  
+Owner: Claude (was Codex; roster changed 2026-07-25)  
 Operator approval: Tejas
 
 ## Decision

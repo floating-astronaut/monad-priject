@@ -439,3 +439,46 @@
   coordination, this log.
 - **Remains:** FE-3's one manual wallet run, ENV-2, FE-2. No backend lane is
   open.
+
+## 2026-07-26 — FE-2 — Principal setup flow
+
+- **Owner:** Claude, lane branch `lane/fe-2-principal-setup`.
+- **Read:** `docs/BUILD-SPEC.md`, `docs/ARCHITECTURE.md`,
+  `docs/OPEN-QUESTIONS.md` Q3/Q8/Q10, `docs/TESTING.md` frontend list.
+- **Changed:** a collapsed "Principal controls" panel with register, set policy
+  and pause/resume; a shared write path that connects, asserts chain 10143,
+  reports Included with hash and explorer link, then Confirmed, then re-reads
+  chain state so the rest of the page stops disagreeing with the contract;
+  decoded custom errors on failure. New `assertCorrectChain` in `gate.ts`.
+- **Kept off the demo path deliberately.** Q3 preconfigures registration and
+  policy; the panel is collapsed and its summary line says so. Q3 also requires
+  setup to remain runnable live for questions, which is the reason it exists.
+- **Guards before gas:** a connected wallet that is not the stored principal is
+  told so by address, with the error the contract would return, rather than
+  discovering `NotPrincipal` after paying for a reverted transaction.
+- **Verified on the deployed site without a wallet:** collapsed by default;
+  fields prefill from chain state; correct guard copy with no wallet and with a
+  non-principal wallet; demo path unchanged — 100 units still returns a real
+  `SpendCapExceeded(100, 10)`; console clean; no MON strings in the page.
+- **Not verified:** the writes themselves need the principal key in a browser
+  wallet. FE-2 is left IN VERIFICATION rather than closed on the read-only half.
+- **Defect found, and a correction to my own earlier evidence.** Checking the
+  new panel at 375 px surfaced that `.app-shell` sets `overflow: hidden`, so
+  overflowing content is clipped rather than producing a horizontal scrollbar.
+  Grid items defaulted to `min-width: auto` and refused to shrink below
+  min-content, so panels rendered 438 px wide inside a 351 px column — about
+  75 px of every panel, including the identity addresses, was cut off on a
+  phone. Pre-existing; FE-2 only surfaced it. Fixed with `min-width: 0` on the
+  grid items and `overflow-wrap: anywhere` on address text; re-measured, nothing
+  clipped.
+  The correction: the FE-3 and FE-6 evidence above says "no horizontal overflow
+  at 375 px". That statement was true as written but weaker than it sounded — it
+  came from `documentElement.scrollWidth > innerWidth`, which **cannot** detect
+  clipped overflow under `overflow: hidden`. It never proved the content fit.
+  The check used here measures element bounding boxes against the viewport
+  instead.
+- **Docs updated:** lane board (FE-2 in verification, FE-4 opened with the
+  diagnosis), session coordination, this log.
+- **Remains:** one human wallet run closes FE-2 and FE-3 together — pause then
+  resume the policy is the cheapest check and exercises `setPolicy` both ways.
+  FE-4's keyboard, focus, contrast and projector checks are untested. ENV-2.

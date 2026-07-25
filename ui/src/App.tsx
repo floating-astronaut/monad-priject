@@ -22,6 +22,7 @@ import {
 import {
   ACTION_ID,
   AGENT_ADDRESS,
+  assertCorrectChain,
   connectWallet,
   decodeGateError,
   EXPLORER,
@@ -144,6 +145,60 @@ function App() {
       showToast(error instanceof Error ? error.message : "Wallet connection failed");
     } finally {
       setConnecting(false);
+    }
+  }
+
+  // --- FE-2: principal setup -------------------------------------------
+  // Q3 preconfigures registration and policy, so this stays collapsed and off
+  // the demo path. It exists because Q3 also says setup must remain runnable
+  // live if judges ask to see it.
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [setupAgent, setSetupAgent] = useState(AGENT_ADDRESS);
+  const [setupLabel, setSetupLabel] = useState("Atlas");
+  const [setupCap, setSetupCap] = useState(10);
+  const [setupBusy, setSetupBusy] = useState("");
+  const [setupStage, setSetupStage] = useState<"" | "submitted" | "confirmed" | "error">("");
+  const [setupHash, setSetupHash] = useState("");
+  const [setupMessage, setSetupMessage] = useState("");
+
+  const isPrincipal =
+    Boolean(wallet) && Boolean(chain?.principal) &&
+    wallet.toLowerCase() === chain!.principal.toLowerCase();
+
+  /** Shared write path: connect, verify the chain, submit, then confirm. */
+  async function runSetup(
+    action: string,
+    call: (contract: ReturnType<typeof gateContract>) => Promise<{ hash: string; wait: () => Promise<unknown> }>,
+  ) {
+    setSetupBusy(action);
+    setSetupStage("");
+    setSetupHash("");
+    setSetupMessage("");
+    try {
+      const connected = await connectWallet();
+      setWallet(connected.address);
+      await assertCorrectChain(connected.provider);
+
+      const tx = await call(gateContract(connected.signer));
+      setSetupHash(tx.hash);
+      setSetupStage("submitted");
+      setSetupMessage(`${action} submitted`);
+
+      await tx.wait();
+      setSetupStage("confirmed");
+      setSetupMessage(`${action} confirmed`);
+
+      const refreshed = await fetchChainState();
+      setChain(refreshed);
+      setRegistered(refreshed.registered);
+      setPolicyActive(refreshed.active);
+      setMaxSpend(refreshed.cap);
+    } catch (error) {
+      const decoded = decodeGateError(error);
+      setSetupStage("error");
+      setSetupMessage(decoded.detail);
+    } finally {
+      setSetupBusy("");
     }
   }
 
@@ -370,6 +425,103 @@ function App() {
                 ><span /></button>
                 <strong>{policyActive ? "Active" : "Paused"}</strong>
               </div>
+            </article>
+
+            <article className="panel setup-panel">
+              <button
+                className="setup-toggle"
+                onClick={() => setSetupOpen((open) => !open)}
+                aria-expanded={setupOpen}
+              >
+                <span><Wallet size={16} /> Principal controls</span>
+                <em>{setupOpen ? "hide" : "setup is preconfigured — open to run it live"}</em>
+              </button>
+
+              {setupOpen && (
+                <div className="setup-body">
+                  {!liveMode && <p className="run-caption">Demo mode — no contract to write to.</p>}
+                  {liveMode && !wallet && (
+                    <p className="run-caption">Connect the principal wallet to register or change policy.</p>
+                  )}
+                  {liveMode && wallet && !isPrincipal && (
+                    <p className="run-caption">
+                      Connected {shortAddress(wallet)} is not the registered principal
+                      ({chain?.principal ? shortAddress(chain.principal) : "unknown"}). The contract will
+                      reject these writes with NotPrincipal.
+                    </p>
+                  )}
+
+                  <label className="setup-field">
+                    <span>Agent address</span>
+                    <input value={setupAgent} onChange={(e) => setSetupAgent(e.target.value)} spellCheck={false} />
+                  </label>
+                  <label className="setup-field">
+                    <span>Label</span>
+                    <input value={setupLabel} onChange={(e) => setSetupLabel(e.target.value)} />
+                  </label>
+                  <label className="setup-field">
+                    <span>Spend cap · policy units</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={setupCap}
+                      onChange={(e) => setSetupCap(Number(e.target.value))}
+                    />
+                  </label>
+
+                  <div className="setup-actions">
+                    <button
+                      disabled={!liveMode || Boolean(setupBusy)}
+                      onClick={() =>
+                        runSetup("Registration", (c) => c.registerAgent(setupAgent, wallet, setupLabel))
+                      }
+                    >
+                      {setupBusy === "Registration" ? <RefreshCw className="spin" size={14} /> : <Fingerprint size={14} />}
+                      Register agent
+                    </button>
+                    <button
+                      disabled={!liveMode || Boolean(setupBusy)}
+                      onClick={() =>
+                        runSetup("Policy", (c) => c.setPolicy(setupAgent, setupCap, ACTION_ID, true))
+                      }
+                    >
+                      {setupBusy === "Policy" ? <RefreshCw className="spin" size={14} /> : <Gauge size={14} />}
+                      Set policy
+                    </button>
+                    <button
+                      disabled={!liveMode || Boolean(setupBusy)}
+                      onClick={() =>
+                        runSetup(policyActive ? "Pause" : "Resume", (c) =>
+                          c.setPolicy(setupAgent, setupCap, ACTION_ID, !policyActive),
+                        )
+                      }
+                    >
+                      {setupBusy === "Pause" || setupBusy === "Resume" ? (
+                        <RefreshCw className="spin" size={14} />
+                      ) : (
+                        <CircleDot size={14} />
+                      )}
+                      {policyActive ? "Pause policy" : "Resume policy"}
+                    </button>
+                  </div>
+
+                  {setupStage && (
+                    <div className={`setup-status ${setupStage}`}>
+                      <strong>
+                        {setupStage === "submitted" && "Included"}
+                        {setupStage === "confirmed" && "Confirmed"}
+                        {setupStage === "error" && "Rejected"}
+                      </strong>
+                      <span>{setupMessage}</span>
+                      {setupHash && (
+                        <a href={`${EXPLORER}/tx/${setupHash}`} target="_blank" rel="noreferrer">
+                          {shortAddress(setupHash)} <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </article>
 
             <div className="principle-note">

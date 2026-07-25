@@ -5,9 +5,9 @@
 
 ## Active
 
-### ENV-1 — Burner wallets and access [OPEN]
+### ENV-1 — Burner wallets and access [IN PROGRESS]
 
-Owner: Tejas
+Owner: Tejas (wallet generation executed by Claude on operator instruction 2026-07-26)
 Opened: 2026-07-25
 Reading: `docs/SECURITY.md`, `docs/MONAD-DEPLOYMENT.md`
 Acceptance: two burner addresses recorded (deployer/principal, agent) with **no
@@ -16,6 +16,19 @@ to Claude for the address manifest
 Write-back: `packages/abi/addresses.json`, `docs/SECURITY.md`
 Notes: per OP-1 Q2. Blocks BE-3 (deployment). Does **not** block BE-1 or BE-2 —
 Claude works those against local Anvil in the meantime.
+
+Progress 2026-07-26:
+
+- Two distinct burners generated as encrypted Foundry keystores on the build
+  box; addresses recorded in `packages/abi/addresses.json` and `docs/SECURITY.md`.
+  deployer/principal `0xae06174FFd44850FAC43cf8F7D0ECB0848678071`,
+  agent `0xd00e55Da854b53F02Ff0fe8DD6a35f68a14E2030`. No key in Git.
+- Verified: RPC `https://testnet-rpc.monad.xyz` returns chain ID 10143; both
+  keystores decrypt with their stored password files.
+- **Remaining, and it is Tejas only:** faucet funding. Both balances are 0 wei.
+  `https://faucet.monad.xyz` gates on a human/social check, so no agent can do
+  this. The lane stays open until both addresses hold testnet MON.
+- Cloudflare/GitHub access half of this lane is untouched and still open.
 
 ### BE-1b — Attestation nonce in event [OPEN]
 

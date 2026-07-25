@@ -50,6 +50,25 @@ let any agent burn another agent's result hash. Operator decision.
 | Cloudflare token | Yes | Cloudflare/CI secret store |
 | Explorer API key | Usually | local/CI secret, never frontend |
 
+## Burner wallets (ENV-1, 2026-07-26)
+
+Testnet burners only, generated on the build box with `cast wallet new` into
+encrypted JSON keystores. The private keys were never printed, echoed to a
+terminal, transmitted, or written anywhere outside the keystore file.
+
+| Role | Address | Foundry account | Password file |
+|---|---|---|---|
+| deployer + principal | `0xae06174FFd44850FAC43cf8F7D0ECB0848678071` | `monad-deployer` | `~/.monad-gate/deployer.pass` |
+| agent | `0xd00e55Da854b53F02Ff0fe8DD6a35f68a14E2030` | `monad-agent` | `~/.monad-gate/agent.pass` |
+
+- Keystores: `~/.foundry/keystores/` (0600), outside the repo tree.
+- Password files: `~/.monad-gate/` (dir 0700, files 0400), outside the repo tree.
+- Both decrypt-verified via `cast wallet address --account <name> --password-file <file>`.
+- Principal never equals agent, per OP-1 Q2 and the `PrincipalIsAgent` control.
+- Public addresses only in `packages/abi/addresses.json`. Losing a password file
+  means regenerating the pair and re-recording the addresses; there is no backup
+  by design, and nothing of value is held.
+
 Vite warns `VITE_*` values are bundled:
 [Vite env guidance](https://vite.dev/guide/env-and-mode).
 

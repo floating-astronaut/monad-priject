@@ -3,5 +3,7 @@
   "rpcUrl": "https://testnet-rpc.monad.xyz",
   "gate": "",
   "explorerBase": "https://testnet.monadvision.com",
-  "actionIdTransferMock": "0x51eb1c386950e1c31f854f7cb2a140bf1b0ce3b0ad0d1f1f8ae197e77912cdc1"
+  "actionIdTransferMock": "0x51eb1c386950e1c31f854f7cb2a140bf1b0ce3b0ad0d1f1f8ae197e77912cdc1",
+  "deployerPrincipal": "0xae06174FFd44850FAC43cf8F7D0ECB0848678071",
+  "agent": "0xd00e55Da854b53F02Ff0fe8DD6a35f68a14E2030"
 }

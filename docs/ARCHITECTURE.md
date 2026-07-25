@@ -11,8 +11,9 @@ from `packages/abi/gate.json`.
 ### Interface handoff (`packages/abi/`)
 
 `gate.json` is the only contract surface consumed by the UI.
-`addresses.json` records chain ID, RPC, explorer, deployed address, and the
-canonical `TRANSFER_MOCK` action ID.
+`addresses.json` records chain ID, RPC, explorer, deployed address, the
+canonical `TRANSFER_MOCK` action ID, and the public burner addresses for the
+deployer/principal and the agent. It holds public values only — never a key.
 
 ### Monad contract (`contracts/`)
 

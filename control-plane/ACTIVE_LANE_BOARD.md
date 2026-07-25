@@ -5,6 +5,36 @@
 
 ## Active
 
+### FE-3 — Agent fail/pass flow [IN VERIFICATION]
+
+Owner: Claude
+Opened: 2026-07-26
+Depends on: BE-4 (closed)
+Acceptance: distinct agent shows real over-cap denial, successful attestation,
+and explorer proof; simulated hash never appears live
+Notes: the UI now reads identity and policy from the deployed contract on load
+and evaluates every action against it.
+
+Verified on the deployed site:
+
+- identity and policy are real — the page renders label "Atlas", agent
+  `0xd00e…2030`, principal `0xae06…8071`, cap 10, active, all read from chain;
+- the denial is **the contract's own decision**, not a local guess. Running 100
+  against the cap issues an `eth_call` to the deployed contract and renders the
+  decoded custom error `SpendCapExceeded(100, 10)`;
+- with 5 units the contract allows it and the UI asks for the agent wallet
+  instead of inventing a result — no simulated hash appears anywhere on the live
+  path (asserted in the DOM, not eyeballed);
+- console clean, no horizontal overflow at 375 px.
+
+**Not yet verified, and the reason the lane is not closed:** the successful
+attestation and its explorer link need the agent key signing in a browser
+wallet. That cannot be done headlessly, so a human must run it once — import
+the agent burner into MetaMask on Monad testnet, set 5 units, click through, and
+confirm the receipt links to the tx on MonadVision. The same path already
+succeeded via `cast` in BE-4, so the contract side is proven; what is unproven
+is the browser signing path.
+
 ### FE-6 — Amounts must read as policy units, not MON [OPEN]
 
 Owner: Claude
@@ -80,6 +110,12 @@ grows further.
 
 ## Recently closed
 
+- **FE-6 — Amounts read as policy units** [CLOSED 2026-07-26] — every amount in
+  the UI is now labelled in policy units: the cap field, the action input, the
+  slider bounds, the denial copy, the attestation receipt and the audit strip.
+  The only remaining "MON" strings are the MONAD wordmark and one deliberate
+  disclaimer, "Policy units, not MON — no value moves." Verified against the
+  deployed page text, so OP-1 Q8 now holds where a judge can actually see it.
 - **BE-3 — Deployment and ABI export** [CLOSED 2026-07-26] — `MonadGate`
   deployed to Monad testnet at `0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2`,
   tx `0xe8d138528b0620917745415599d10ac544298c4269e93e7c8b2b0d65406875ee`,

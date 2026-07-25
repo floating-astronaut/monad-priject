@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
   Bot,
@@ -21,13 +21,18 @@ import {
 } from "lucide-react";
 import {
   ACTION_ID,
+  AGENT_ADDRESS,
   connectWallet,
+  decodeGateError,
   EXPLORER,
-  GATE_ADDRESS,
+  fetchChainState,
   gateContract,
+  LIVE,
   resultHash,
   shortAddress,
+  simulateGate,
 } from "./gate";
+import type { ChainState } from "./gate";
 
 type StepState = "done" | "active" | "idle";
 type Receipt = {
@@ -36,7 +41,33 @@ type Receipt = {
   time: string;
   hash?: string;
   reason?: string;
+  /** The contract's own custom error, e.g. SpendCapExceeded(100, 10). */
+  detail?: string;
 };
+
+function nowLabel() {
+  return new Date().toLocaleTimeString([], {
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+  });
+}
+
+/** Plain-language reading of the contract's custom error. */
+function describeGateError(name: string, amount: number, cap: number) {
+  switch (name) {
+    case "SpendCapExceeded":
+      return `Requested ${amount} policy units exceeds the ${cap}-unit cap the principal set.`;
+    case "PolicyInactive":
+      return "The principal has paused this policy.";
+    case "AgentNotRegistered":
+      return "This address is not a registered agent.";
+    case "ActionNotAllowed":
+      return "This is not the action the policy allows.";
+    case "ResultAlreadyAttested":
+      return "This exact result was already attested — replay rejected.";
+    default:
+      return "The gate rejected this action.";
+  }
+}
 
 const DEMO_AGENT = "0xA6E17000000000000000000000000000000A6E17";
 const DEMO_PRINCIPAL = "0xA11CE00000000000000000000000000000A11CE";
@@ -52,10 +83,34 @@ function App() {
   const [receipt, setReceipt] = useState<Receipt | null>(null);
   const [history, setHistory] = useState<Receipt[]>([]);
   const [toast, setToast] = useState("");
-  const [liveMode, setLiveMode] = useState(false);
+  const [liveMode] = useState(LIVE);
+  const [chain, setChain] = useState<ChainState | null>(null);
+  const [chainError, setChainError] = useState("");
 
-  const agent = wallet || DEMO_AGENT;
-  const principal = wallet || DEMO_PRINCIPAL;
+  // Live identity and policy are read from the contract on load, so judges see
+  // real state before any wallet is connected.
+  useEffect(() => {
+    if (!LIVE) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const state = await fetchChainState();
+        if (cancelled) return;
+        setChain(state);
+        setRegistered(state.registered);
+        setPolicyActive(state.active);
+        setMaxSpend(state.cap);
+      } catch (error) {
+        if (!cancelled) setChainError(decodeGateError(error).detail);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const agent = chain?.agent || (LIVE ? AGENT_ADDRESS : wallet || DEMO_AGENT);
+  const principal = chain?.principal || (LIVE ? "" : DEMO_PRINCIPAL);
   const allowed = registered && policyActive && amount <= maxSpend;
   const status = !registered ? "Identity missing" : !policyActive ? "Policy paused" : allowed ? "Ready to attest" : "Cap exceeded";
 
@@ -77,8 +132,11 @@ function App() {
     try {
       const connected = await connectWallet();
       setWallet(connected.address);
-      setLiveMode(Boolean(GATE_ADDRESS));
-      showToast(GATE_ADDRESS ? "Wallet connected · live mode ready" : "Wallet connected · demo mode");
+      if (LIVE && chain && connected.address.toLowerCase() !== chain.agent.toLowerCase()) {
+        showToast(`Connected ${shortAddress(connected.address)} — the registered agent is ${shortAddress(chain.agent)}`);
+      } else {
+        showToast(LIVE ? "Wallet connected · live mode" : "Wallet connected · demo mode");
+      }
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Wallet connection failed");
     } finally {
@@ -94,6 +152,12 @@ function App() {
   async function runGate() {
     setRunning(true);
     setReceipt(null);
+
+    if (liveMode) {
+      await runGateLive();
+      return;
+    }
+
     await new Promise((resolve) => window.setTimeout(resolve, 720));
 
     if (!allowed) {
@@ -105,7 +169,7 @@ function App() {
           ? "Agent is not registered"
           : !policyActive
             ? "Principal has paused this policy"
-            : `Requested ${amount} MON exceeds the ${maxSpend} MON policy cap`,
+            : `Requested ${amount} policy units exceeds the ${maxSpend}-unit policy cap`,
       };
       setReceipt(denied);
       setHistory((items) => [denied, ...items].slice(0, 4));
@@ -113,28 +177,65 @@ function App() {
       return;
     }
 
+    const passed: Receipt = {
+      decision: "allowed",
+      amount,
+      hash: `demo-${crypto.randomUUID().slice(0, 8)}`,
+      time: nowLabel(),
+    };
+    setReceipt(passed);
+    setHistory((items) => [passed, ...items].slice(0, 4));
+    setRunning(false);
+  }
+
+  /**
+   * Live path. The allow/deny decision is made by the deployed contract via
+   * eth_call, so a denial is real policy evaluation on Monad — not a guess made
+   * here. Only the attestation itself needs the agent's signature, and no
+   * simulated hash is ever produced on this path.
+   */
+  async function runGateLive() {
     try {
-      let hash = `demo-${crypto.randomUUID().slice(0, 8)}`;
-      if (liveMode && wallet) {
-        const connected = await connectWallet();
-        const tx = await gateContract(connected.signer).executeGated(
-          ACTION_ID,
+      const outcome = await simulateGate(agent, amount);
+
+      if (!outcome.allowed) {
+        const denied: Receipt = {
+          decision: "denied",
           amount,
-          resultHash(agent, amount),
-        );
-        hash = tx.hash;
-        await tx.wait();
+          time: nowLabel(),
+          reason: describeGateError(outcome.error, amount, maxSpend),
+          detail: outcome.detail,
+        };
+        setReceipt(denied);
+        setHistory((items) => [denied, ...items].slice(0, 4));
+        return;
       }
-      const passed: Receipt = {
+
+      if (!wallet) {
+        showToast("Policy allows it. Connect the agent wallet to write the attestation.");
+        return;
+      }
+
+      const connected = await connectWallet();
+      const tx = await gateContract(connected.signer).executeGated(
+        ACTION_ID,
+        amount,
+        resultHash(agent, amount),
+      );
+      const submitted: Receipt = {
         decision: "allowed",
         amount,
-        hash,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+        hash: tx.hash,
+        time: nowLabel(),
+        detail: "Included — waiting for confirmation",
       };
-      setReceipt(passed);
-      setHistory((items) => [passed, ...items].slice(0, 4));
+      setReceipt(submitted);
+      setHistory((items) => [submitted, ...items].slice(0, 4));
+      await tx.wait();
+      setReceipt({ ...submitted, detail: "Confirmed on Monad" });
+      showToast("Attestation confirmed on Monad");
     } catch (error) {
-      showToast(error instanceof Error ? error.message : "Transaction failed");
+      showToast(decodeGateError(error).detail);
     } finally {
       setRunning(false);
     }
@@ -205,20 +306,22 @@ function App() {
                 <div className="agent-avatar"><Bot size={25} /></div>
                 <div className="identity-main">
                   <div className="identity-name-row">
-                    <strong>Atlas Treasury Agent</strong>
+                    <strong>{chain?.label || "Atlas Treasury Agent"}</strong>
                     <span className={`verified ${registered ? "" : "off"}`}>
                       {registered ? <Check size={11} /> : <X size={11} />} {registered ? "Verified" : "Unregistered"}
                     </span>
                   </div>
                   <code>{shortAddress(agent)}</code>
                 </div>
-                <button className="icon-toggle" onClick={() => setRegistered((value) => !value)} title="Toggle registration">
-                  <RefreshCw size={15} />
-                </button>
+                {!liveMode && (
+                  <button className="icon-toggle" onClick={() => setRegistered((value) => !value)} title="Toggle registration">
+                    <RefreshCw size={15} />
+                  </button>
+                )}
               </div>
               <div className="principal-row">
                 <UserRoundCheck size={17} />
-                <div><span>Human principal</span><code>{shortAddress(principal)}</code></div>
+                <div><span>Human principal</span><code>{principal ? shortAddress(principal) : "—"}</code></div>
                 <div className="liability">LIABLE</div>
               </div>
             </article>
@@ -239,9 +342,10 @@ function App() {
                       type="number"
                       min="0"
                       value={maxSpend}
+                      disabled={liveMode}
                       onChange={(event) => setMaxSpend(Number(event.target.value))}
                     />
-                    <b>MON</b>
+                    <b>units</b>
                   </div>
                 </div>
               </div>
@@ -249,7 +353,8 @@ function App() {
                 <div><CircleDot size={16} /><span>Policy status</span></div>
                 <button
                   className={`toggle ${policyActive ? "on" : ""}`}
-                  onClick={() => setPolicyActive((value) => !value)}
+                  onClick={() => !liveMode && setPolicyActive((value) => !value)}
+                  disabled={liveMode}
                   aria-label="Toggle policy"
                 ><span /></button>
                 <strong>{policyActive ? "Active" : "Paused"}</strong>
@@ -265,32 +370,37 @@ function App() {
           <section className="right-stack">
             <article className="panel action-panel">
               <PanelHeading icon={<Play size={18} />} label="03 / GATE" title="Try an action" />
-              <div className="amount-label"><span>Transfer amount</span><em>{status}</em></div>
+              <div className="amount-label"><span>Action amount · policy units</span><em>{status}</em></div>
               <div className="amount-input">
                 <input
-                  aria-label="Transfer amount"
+                  aria-label="Action amount"
                   type="number"
                   min="0"
                   value={amount}
                   onChange={(event) => { setAmount(Number(event.target.value)); setReceipt(null); }}
                 />
-                <span>MON</span>
+                <span>units</span>
               </div>
               <input
                 className="range"
-                aria-label="Transfer amount slider"
+                aria-label="Action amount slider"
                 type="range"
                 min="0"
                 max="120"
                 value={Math.min(amount, 120)}
                 onChange={(event) => { setAmount(Number(event.target.value)); setReceipt(null); }}
               />
-              <div className="range-labels"><span>0</span><span className="cap-marker">CAP {maxSpend}</span><span>120 MON</span></div>
+              <div className="range-labels"><span>0</span><span className="cap-marker">CAP {maxSpend}</span><span>120 units</span></div>
 
               <button className="run-button" onClick={runGate} disabled={running}>
                 {running ? <><RefreshCw className="spin" size={18} /> Checking policy…</> : <><ShieldCheck size={18} /> Run through Gate <ArrowUpRight size={17} /></>}
               </button>
-              <p className="run-caption">{liveMode ? "Live contract mode · transaction requires agent signer" : "Safe demo mode · no funds will move"}</p>
+              <p className="run-caption">
+                {liveMode
+                  ? "Live contract · the gate decision is made on Monad. Policy units, not MON — no value moves."
+                  : "Safe demo mode · no chain call, no funds move"}
+              </p>
+              {chainError && <p className="run-caption">Chain read failed: {chainError}</p>}
             </article>
 
             <article className={`decision-card ${receipt?.decision || "empty"}`}>
@@ -309,9 +419,9 @@ function App() {
                     <span className="decision-time">{receipt.time}</span>
                   </div>
                   <p>{receipt.reason}</p>
-                  <div className="reason-code"><span>POLICY_REVERT</span><code>SpendCapExceeded({amount}, {maxSpend})</code></div>
+                  <div className="reason-code"><span>POLICY_REVERT</span><code>{receipt.detail || `SpendCapExceeded(${amount}, ${maxSpend})`}</code></div>
                   <button className="fix-button" onClick={() => { setAmount(Math.max(1, Math.min(5, maxSpend))); setReceipt(null); }}>
-                    Set amount to 5 MON <ChevronRight size={15} />
+                    Set amount to 5 units <ChevronRight size={15} />
                   </button>
                 </>
               )}
@@ -323,16 +433,17 @@ function App() {
                     <span className="decision-time">{receipt.time}</span>
                   </div>
                   <p>Policy passed. A tamper-proof receipt binds agent, principal, action, and result.</p>
+                  {receipt.detail && <p className="run-caption">{receipt.detail}</p>}
                   <div className="receipt-grid">
                     <span>Agent<strong>{shortAddress(agent)}</strong></span>
-                    <span>Amount<strong>{amount} MON</strong></span>
+                    <span>Amount<strong>{amount} units</strong></span>
                   </div>
                   {receipt.hash?.startsWith("0x") ? (
                     <a className="proof-link" href={`${EXPLORER}/tx/${receipt.hash}`} target="_blank" rel="noreferrer">
                       <Link2 size={16} /> View proof on Monad <ExternalLink size={14} />
                     </a>
                   ) : (
-                    <div className="demo-proof"><Link2 size={15} /> Demo attestation · {receipt.hash}</div>
+                    <div className="demo-proof"><Link2 size={15} /> Simulated attestation · demo mode only · {receipt.hash}</div>
                   )}
                 </>
               )}
@@ -346,12 +457,12 @@ function App() {
             <button onClick={resetDemo}><RefreshCw size={13} /> Reset demo</button>
           </div>
           <div className="audit-list">
-            {history.length === 0 && <p>Run the 100 MON action first. Let the red screen tell the story.</p>}
+            {history.length === 0 && <p>Run the 100-unit action first. Let the red screen tell the story.</p>}
             {history.map((item, index) => (
               <div className="audit-item" key={`${item.time}-${index}`}>
                 <span className={`audit-status ${item.decision}`} />
                 <strong>{item.decision === "allowed" ? "ATTESTED" : "DENIED"}</strong>
-                <span>TRANSFER_MOCK · {item.amount} MON</span>
+                <span>TRANSFER_MOCK · {item.amount} units</span>
                 <time>{item.time}</time>
               </div>
             ))}

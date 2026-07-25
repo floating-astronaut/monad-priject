@@ -267,3 +267,44 @@
   is FE-2/FE-3.
 - **Remains:** ENV-2 (dashboard OAuth, Tejas), FE-2/FE-3 (live wiring), FE-6
   (units), then DEP-1 can actually close.
+
+## 2026-07-26 — FE-3 + FE-6 — Live agent flow and policy units
+
+- **Owner:** Claude, lane branch `lane/fe-3-fe-6-live-wiring` (stacked on DEP-1).
+- **Read:** `docs/BUILD-SPEC.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`
+  demo truth, `docs/OPEN-QUESTIONS.md` Q3/Q7/Q8/Q10.
+- **The substantive change:** the deny decision is no longer computed in the
+  browser. `simulateGate()` issues an `eth_call` to the deployed contract with
+  `from` set to the agent, so the node evaluates real policy against real state
+  and the UI renders the contract's own custom error. Previously the UI compared
+  two numbers in JavaScript and printed a hardcoded `SpendCapExceeded(...)`
+  string — it would have shown a denial even against a contract that allowed the
+  action, which is the one thing this demo must never do.
+- **Also:** identity and policy are read from chain on load with no wallet, so
+  judges see real state immediately; the demo toggles that would contradict
+  chain state are disabled in live mode; the manifest is now the source of truth
+  for addresses with `VITE_*` as override, so a build cannot disagree with what
+  BE-3/BE-4 recorded; submitted and confirmed are two distinct receipt states per
+  Q10.
+- **Verified on the deployed site, in a browser:** renders label "Atlas", agent
+  `0xd00e…2030`, principal `0xae06…8071`, cap 10, active — all from chain. 100
+  units returns `SpendCapExceeded(100, 10)` decoded from the real revert. 5 units
+  is allowed by the contract and the UI asks for the agent wallet rather than
+  fabricating a result. Asserted in the DOM that no `demo-` hash and no
+  "Simulated attestation" string exists on the live path. Console clean. No
+  horizontal overflow at 375 px. `tsc -b` green.
+- **FE-6:** every amount now reads in policy units. The only "MON" strings left
+  are the MONAD wordmark and the deliberate disclaimer "Policy units, not MON —
+  no value moves". Q8 is now satisfied where a judge can see it, not just in a
+  doc.
+- **Honest gap:** the successful attestation and its explorer link were **not**
+  verified end to end, because signing needs the agent key in a browser wallet
+  and that cannot be driven headlessly. BE-4 proved the same contract path with
+  `cast`, so the chain side is sound; the browser signing path is untested. FE-3
+  is left IN VERIFICATION with the exact manual steps rather than closed on a
+  partial check.
+- **Docs updated:** lane board (FE-3 in verification, FE-6 closed), Cloudflare
+  runbook, manifest hosting block, session coordination, this log.
+- **Remains:** one human wallet run to close FE-3; ENV-2 for Git-connected
+  previews; FE-2 (principal setup UI) still unbuilt but not on the demo path
+  since Q3 preconfigures; BE-1b, BE-2.

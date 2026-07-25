@@ -20,6 +20,8 @@ import google.auth
 from googleapiclient.discovery import build
 
 _ID_FILE = Path.home() / ".monad-gate/sheet.env"
+VAULT = Path(os.environ.get("MONAD_SECRETS_FILE",
+                            Path.home() / ".monad-gate/secrets.json"))
 SHEET_ID = os.environ.get("MONAD_SHEET_ID") or (
     _ID_FILE.read_text().strip() if _ID_FILE.exists() else "")
 REPO = Path(__file__).resolve().parent.parent
@@ -157,6 +159,23 @@ def parse_chain():
     return rows
 
 
+def parse_secrets():
+    """Operator-visible credential vault.
+
+    Tejas asked for every generated wallet/secret to land in the sheet
+    (2026-07-26). The sheet is shared with exactly two identities and these are
+    throwaway testnet burners, so the material lives here in the clear on
+    purpose. Nothing with real value may ever be added.
+    """
+    if not VAULT.exists():
+        return [["(no vault)", "", "", "", "", "", "", "", str(VAULT) + " not found"]]
+    v = json.loads(VAULT.read_text())
+    return [[s.get("name", ""), s.get("kind", ""), s.get("role", ""),
+             s.get("address", ""), s.get("private_key", ""), s.get("password", ""),
+             s.get("keystore", ""), s.get("created", ""), s.get("notes", "")]
+            for s in v.get("secrets", [])]
+
+
 def build_status(lanes):
     active = [r for r in lanes if not r[2].startswith("CLOSED")]
     closed = [r for r in lanes if r[2].startswith("CLOSED")]
@@ -172,17 +191,21 @@ def build_status(lanes):
         ["lanes closed", str(len(closed))],
         ["contract deployed", "yes" if manifest.get("gate") else "NO — BE-3 pending"],
         ["blocking now", "ENV-1 faucet funding (both burners at 0)"],
+        ["secrets tab", "testnet burners in the clear, by operator decision - "
+                        "never put a mainnet or funded key here"],
     ]
 
 
 # ---------------------------------------------------------------- sheet io
-TABS = ["Status", "Lanes", "Chain", "Decisions", "Evidence"]
+TABS = ["Status", "Lanes", "Chain", "Decisions", "Evidence", "Secrets"]
 HEADERS = {
     "Status": ["Field", "Value"],
     "Lanes": ["Lane", "Title", "Status", "Owner", "Depends on", "Acceptance", "Notes"],
     "Chain": ["Field", "Value", "Explorer"],
     "Decisions": ["Q", "Section", "Question", "Status", "Answer"],
     "Evidence": ["Date", "Lane", "Title", "Owner", "Verified", "Material finding", "Remains"],
+    "Secrets": ["Name", "Kind", "Role", "Address", "Private key", "Keystore password",
+                "Keystore path", "Created", "Notes"],
 }
 
 
@@ -242,12 +265,16 @@ def main():
         "Chain": parse_chain(),
         "Decisions": parse_questions(),
         "Evidence": parse_evidence(),
+        "Secrets": parse_secrets(),
     }
     for t in TABS:
         print(f"{t}: {len(data[t])} rows")
     if dry:
         for t in TABS:
             print("\n==", t, "==")
+            if t == "Secrets":
+                print("   (%d rows, redacted)" % len(data[t]))
+                continue
             for r in data[t][:4]:
                 print("  ", [str(c)[:60] for c in r])
         return

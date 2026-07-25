@@ -59,8 +59,23 @@ world-readable: no IDs, endpoints, or internal URLs that are not meant to be.
 ## Burner wallets (ENV-1, 2026-07-26)
 
 Testnet burners only, generated on the build box with `cast wallet new` into
-encrypted JSON keystores. The private keys were never printed, echoed to a
-terminal, transmitted, or written anywhere outside the keystore file.
+encrypted JSON keystores. The keys were never pasted into a prompt, a commit, or
+any chat transcript.
+
+**Operator decision, 2026-07-26.** Tejas directed that every wallet and secret
+this project generates also be mirrored into the private operator sheet, in the
+clear, for hackathon speed. That is now the standing rule and it changes this
+contract:
+
+- the authoritative copies stay on the box (`~/.foundry/keystores`,
+  `~/.monad-gate/secrets.json`, mode 0600);
+- `tools/sheet_sync.py` publishes them to the `Secrets` tab of the sheet, which
+  is shared with exactly two identities (Tejas and one service account) and is
+  **not** link-shared;
+- this is acceptable only because both wallets are throwaway testnet burners
+  holding nothing of value. **Never put a mainnet key, a funded wallet, a
+  Cloudflare token, or any credential with real blast radius on that tab.**
+  Anything of that class stays on the box and is referenced by path only.
 
 | Role | Address | Foundry account | Password file |
 |---|---|---|---|

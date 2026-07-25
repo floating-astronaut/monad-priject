@@ -346,3 +346,47 @@
 - **Remains:** one human wallet run to close FE-3; ENV-2 for Git-connected
   previews; FE-2 (principal setup UI) still unbuilt but not on the demo path
   since Q3 preconfigures; BE-1b, BE-2.
+
+## 2026-07-26 — BE-1b — Attestation nonce in event
+
+- **Owner:** Claude, lane branch `lane/be-1b-attestation-nonce`.
+- **Read:** `docs/SECURITY.md` contract controls, `docs/ARCHITECTURE.md`,
+  `docs/MONAD-DEPLOYMENT.md`, `docs/OPEN-QUESTIONS.md` Q9.
+- **Changed:** `ActionAttested` now carries the nonce; the nonce is captured
+  into a local before the post-increment so the event and the id use the same
+  value. Three tests added; `gate.json` re-exported from the artifact; the UI
+  decodes the event and surfaces attestation id and nonce on the receipt.
+- **Red first, then green:** the new tests were run against the pre-BE-1b
+  contract restored from `git show HEAD:` — all three failed with
+  "ActionAttested not emitted", because the old event's topic hash differs.
+  Against the new contract all three pass. Suite: 17 passed / 0 failed.
+- **The tests are about the claim, not the code:**
+  `testAttestationIdIsRecomputableFromEventAlone` rebuilds the id using only log
+  topics and data. `testNonceAdvancesAcrossAttestations` prevents two identical
+  actions colliding. `testDeniedActionDoesNotConsumeNonce` guards the sequence a
+  verifier reconstructs from developing unexplained gaps.
+- **Redeploy done in full, not partially:** new contract
+  `0x6e93CE34DB89Cf14C1846Ea65967f5506477F908`, tx `0x047764f4…f1a1`, block
+  48042025, 1,196,933 gas. `cast code` byte-identical to the artifact. Source
+  verified, `runtimeMatch: exact_match`, match 544618. Demo state re-registered
+  (`0x4794f1ea…b2a9`, `0x0340bc52…1b42`). Deny re-proved
+  `SpendCapExceeded(100, 10)`; pass re-proved `0x74f68eb7…b688`.
+- **The claim proved against the live chain:** taking only the emitted log,
+  `keccak256(abi.encode(chainId, contract, agent, principal, actionId, amount,
+  resultHash, nonce))` recomputes to
+  `0x2a3d83dca7d1544df1efa9cdd7968279786f2eb14d12122ad8a4b1cb299cc113`, exactly
+  the id in the event. `SECURITY.md`'s verifiability control moves from **NOT
+  met** to enforced, on evidence rather than assertion.
+- **The manifest-as-source-of-truth change from FE-3 paid for itself:** the UI
+  was rebuilt with no `VITE_GATE_ADDRESS` and picked up the new address from the
+  manifest automatically. Verified the new address is in the bundle and the old
+  one appears zero times, so no build can still point at the dead contract.
+- **Verified on the deployed site:** it reads the new contract — label "Atlas",
+  agent `0xd00e…2030`, principal `0xae06…8071`, cap 10 — and 100 units still
+  returns a real `SpendCapExceeded(100, 10)` from the new deployment.
+- **Docs updated:** `SECURITY.md` control status, lane board, manifest
+  (deployment, verification, supersedes, demo state, proof, recomputation),
+  ABI, this log.
+- **Remains:** FE-3's one manual wallet run, now against the new address — and
+  more worth doing than before, because the receipt will show the attestation id
+  and nonce this lane added. ENV-2, BE-2, FE-2.

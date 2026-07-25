@@ -1,7 +1,7 @@
 {
   "chainId": 10143,
   "rpcUrl": "https://testnet-rpc.monad.xyz",
-  "gate": "0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2",
+  "gate": "0x6e93CE34DB89Cf14C1846Ea65967f5506477F908",
   "explorerBase": "https://testnet.monadvision.com",
   "actionIdTransferMock": "0x51eb1c386950e1c31f854f7cb2a140bf1b0ce3b0ad0d1f1f8ae197e77912cdc1",
   "deployerPrincipal": "0xae06174FFd44850FAC43cf8F7D0ECB0848678071",
@@ -9,47 +9,61 @@
   "deployment": {
     "network": "monad-testnet",
     "chainId": 10143,
-    "contract": "0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2",
-    "deployTx": "0xe8d138528b0620917745415599d10ac544298c4269e93e7c8b2b0d65406875ee",
-    "deployBlock": 48036909,
-    "gasUsed": 1199511,
+    "contract": "0x6e93CE34DB89Cf14C1846Ea65967f5506477F908",
+    "deployTx": "0x047764f4e78306050569846b7bc3fcffe89277af8f2465acd960dd8d7da9f1a1",
+    "deployBlock": 48042025,
+    "gasUsed": 1196933,
     "deployer": "0xae06174FFd44850FAC43cf8F7D0ECB0848678071",
     "deployedAt": "2026-07-26",
-    "solc": "0.8.24+commit.e11b9ed9",
+    "solc": "0.8.24",
     "optimizer": {
       "enabled": true,
       "runs": 200
     },
     "forge": "1.7.1-monad-v1.0.0",
-    "commit": "a34d85f45ce47f207a61571ef5fde15c3e0f29f7",
-    "abiSha256": "7f95d3424a74029ac989fab81439abedfc51ecc81aff4ee0d41d6aaa85bb91fa",
+    "commit": "eefe8dfbc79a0697aee5e1335cf8d11fec7e48af",
+    "abiSha256": "06b67fac611d1780e0c3b9166730aef9338909037913892e32948917a3c72844",
     "sourceVerified": true,
-    "explorer": {
-      "contract": "https://testnet.monadvision.com/address/0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2",
-      "deployTx": "https://testnet.monadvision.com/tx/0xe8d138528b0620917745415599d10ac544298c4269e93e7c8b2b0d65406875ee",
-      "registerTx": "https://testnet.monadvision.com/tx/0xf8b86a234b8fa289e1fdde7a8c19419bc108a7d1c5b8a6f0247824484c30c8c0",
-      "policyTx": "https://testnet.monadvision.com/tx/0x0698117d27bfacbe0d0a4a8dcf4c69259d2c6113ca3583292cc5e9da03831dbb",
-      "passTx": "https://testnet.monadvision.com/tx/0x06366487826e9707a0b91d638c87733c0f68aad159d253484f8830fdf25df982"
-    },
     "verification": {
       "verifier": "sourcify",
       "verifierUrl": "https://sourcify-api-monad.blockvision.org/",
       "runtimeMatch": "exact_match",
-      "matchId": "544617",
-      "verifiedAt": "2026-07-25T18:04:46Z",
-      "jobId": "b0288c97-a865-4227-923e-38b26627bc85"
+      "matchId": "544618",
+      "verifiedAt": "2026-07-25T18:25:09Z",
+      "jobId": "76f68cfa-f0f0-4817-a628-ad53947e8dbc"
+    },
+    "supersedes": {
+      "contract": "0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2",
+      "reason": "BE-1b added the nonce to ActionAttested - a breaking ABI change"
+    },
+    "explorer": {
+      "contract": "https://testnet.monadvision.com/address/0x6e93CE34DB89Cf14C1846Ea65967f5506477F908",
+      "deployTx": "https://testnet.monadvision.com/tx/0x047764f4e78306050569846b7bc3fcffe89277af8f2465acd960dd8d7da9f1a1",
+      "registerTx": "https://testnet.monadvision.com/tx/0x4794f1ea22aaff25af82913b1eff684ff9688e2762ee94a0035747e43127b2a9",
+      "policyTx": "https://testnet.monadvision.com/tx/0x0340bc52c8083ae022ad44378362c14f2e67ec54232d244988b9a2aa81321b42",
+      "passTx": "https://testnet.monadvision.com/tx/0x74f68eb7de5246d7fbfcdab49794210e48163cc33040048c5e396cdfcc9ab688"
     }
   },
+  "hosting": {
+    "provider": "cloudflare-pages",
+    "project": "monad-gate",
+    "productionUrl": "https://monad-gate.pages.dev",
+    "deploymentUrl": "https://5b276aba.monad-gate.pages.dev",
+    "deploymentId": "5b276aba",
+    "sourceCommit": "lane/be-1b-attestation-nonce",
+    "method": "wrangler direct upload (Git integration pending ENV-2)",
+    "uiMode": "live - identity, policy and gate decisions read from the deployed contract; receipt decodes ActionAttested incl. nonce"
+  },
   "demoState": {
-    "note": "Preconfigured per OP-1 Q3. Amounts are abstract policy units per Q8 - no MON moves.",
+    "note": "Preconfigured per OP-1 Q3. Abstract policy units per Q8 - no MON moves.",
     "agentLabel": "Atlas",
     "principal": "0xae06174FFd44850FAC43cf8F7D0ECB0848678071",
     "agent": "0xd00e55Da854b53F02Ff0fe8DD6a35f68a14E2030",
     "cap": 10,
     "allowedActionId": "0x51eb1c386950e1c31f854f7cb2a140bf1b0ce3b0ad0d1f1f8ae197e77912cdc1",
     "active": true,
-    "registerTx": "0xf8b86a234b8fa289e1fdde7a8c19419bc108a7d1c5b8a6f0247824484c30c8c0",
-    "policyTx": "0x0698117d27bfacbe0d0a4a8dcf4c69259d2c6113ca3583292cc5e9da03831dbb"
+    "registerTx": "0x4794f1ea22aaff25af82913b1eff684ff9688e2762ee94a0035747e43127b2a9",
+    "policyTx": "0x0340bc52c8083ae022ad44378362c14f2e67ec54232d244988b9a2aa81321b42"
   },
   "proof": {
     "deny": {
@@ -61,24 +75,18 @@
     },
     "pass": {
       "attempt": 5,
-      "tx": "0x06366487826e9707a0b91d638c87733c0f68aad159d253484f8830fdf25df982",
-      "block": 48038351,
-      "gasUsed": 124348,
-      "attestationId": "0x6ef96971b12aa8b23858fb2be4b715ca98559856398a294bb5557d5a20fdb74a",
-      "resultHash": "0x4dc0a4d32e63d85fd7ba676c34229479c1ad2314c8fc933b06068378bb0393ad",
-      "event": "ActionAttested",
-      "eventTopic0": "0x0293aa86fd4ec23294d33bcee9ea8e664c937fe1ef6e09e02c6268abaea27aa8"
+      "tx": "0x74f68eb7de5246d7fbfcdab49794210e48163cc33040048c5e396cdfcc9ab688",
+      "block": 48042176,
+      "attestationId": "0x2a3d83dca7d1544df1efa9cdd7968279786f2eb14d12122ad8a4b1cb299cc113",
+      "resultHash": "0xd3f04ffc913093bf36785843fb5b322b82e2233472637c4e4d4cd0b2413f5b90",
+      "nonce": 0,
+      "event": "ActionAttested"
     },
-    "limitation": "ActionAttested omits the nonce, so attestationId cannot be recomputed from the event alone. Open as BE-1b."
-  },
-  "hosting": {
-    "provider": "cloudflare-pages",
-    "project": "monad-gate",
-    "productionUrl": "https://monad-gate.pages.dev",
-    "deploymentUrl": "https://846fc8eb.monad-gate.pages.dev",
-    "deploymentId": "846fc8eb",
-    "sourceCommit": "fd798de",
-    "method": "wrangler direct upload (Git integration pending ENV-2)",
-    "uiMode": "live - identity, policy and gate decisions read from the deployed contract"
+    "recomputation": {
+      "claim": "attestationId is recomputable off chain from the event alone",
+      "method": "keccak256(abi.encode(chainId, contract, agent, principal, actionId, amount, resultHash, nonce)) using only log topics and data",
+      "recomputed": "0x2a3d83dca7d1544df1efa9cdd7968279786f2eb14d12122ad8a4b1cb299cc113",
+      "matchesEvent": true
+    }
   }
 }

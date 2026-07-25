@@ -30,10 +30,12 @@ Status as of BE-1 (2026-07-26), verified by `forge test` — 14 passed, 0 failed
 - replay: a result hash cannot be attested twice by the same agent —
   **enforced** (`ResultAlreadyAttested`), per OP-1 Q9;
 - no upgrade/admin backdoor unless Tejas approves it — **none exists**;
-- event binds agent, principal, action, amount, result, nonce — **NOT met**.
-  `ActionAttested` omits the nonce, so `attestationId` cannot be recomputed
-  off-chain from the event alone. Open as lane BE-1b; it is the only breaking
-  ABI change and must land with the matching UI update.
+- event binds agent, principal, action, amount, result, nonce — **enforced**
+  (BE-1b, 2026-07-26). `ActionAttested` now carries the nonce, and
+  `attestationId` is recomputable off chain from the log alone. Proven twice:
+  by `testAttestationIdIsRecomputableFromEventAlone`, and against the live
+  deployment by recomputing
+  `0x2a3d83dc…c113` from the emitted event's topics and data.
 
 **Known limitation.** `attestedResult` is keyed `(agent, resultHash)`, so
 `rotateAgent` moves an identity to an address with an empty replay set and a

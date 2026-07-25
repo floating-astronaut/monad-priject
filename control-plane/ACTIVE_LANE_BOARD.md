@@ -104,6 +104,25 @@ projector — is untested.
 
 ## Recently closed
 
+- **FE-9 — Full refusal surface and deck link** [CLOSED 2026-07-26] — the attack
+  panel now carries **five scenarios**, every one verified against the deployed
+  contract with zero allowed:
+  self-escalation → `NotPrincipal`; liability assigned without consent →
+  `NotPrincipal`; undelegated action → `ActionNotAllowed`; replayed result →
+  `ResultAlreadyAttested`; and a boundary walk at cap-1 / cap / cap+1 that
+  returns allowed, allowed, `SpendCapExceeded(11, 10)`.
+  All are `eth_call` — no wallet, no gas, nothing written.
+  Two details worth keeping: the undelegated action uses the **real**
+  `keccak("DRAIN_TREASURY")` rather than the placeholder the source branch
+  hardcoded, and the replay scenario reuses the result hash from the BE-1b proof
+  transaction, which is permanently spent on chain so the demo works at any time
+  without first burning a fresh one.
+  Deck is now reachable from the header (`/deck`), verified 200. No horizontal
+  clipping at 375 px.
+  Only `PolicyInactive` remains undemonstrated in the UI: showing it means
+  pausing the live policy, which is a state change and belongs in Principal
+  controls, not in a read-only panel.
+
 - **FE-8 — Attack scenarios and deck** [CLOSED 2026-07-26] — ported the two
   strongest ideas from the `feat/demo-site` branch on the other repo, rebuilt
   against **our** contract rather than copied.

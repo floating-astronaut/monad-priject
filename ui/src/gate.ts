@@ -338,6 +338,52 @@ export function attemptLiabilityAssignment(principal: string) {
   );
 }
 
+/** An action id the policy does not allow. Real keccak, not a placeholder. */
+export const UNDELEGATED_ACTION = id("DRAIN_TREASURY");
+
+/**
+ * A result hash this agent has already attested (BE-1b proof tx).
+ * Permanent on chain, so replay protection can be demonstrated at any time.
+ */
+export const SPENT_RESULT_HASH =
+  "0xd3f04ffc913093bf36785843fb5b322b82e2233472637c4e4d4cd0b2413f5b90";
+
+/** The agent calls an action that was never delegated to it. */
+export function attemptUndelegatedAction(agent = AGENT_ADDRESS) {
+  return attempt(() =>
+    readContract().executeGated.staticCall(
+      UNDELEGATED_ACTION,
+      1,
+      resultHash(agent, 1),
+      { from: agent },
+    ),
+  );
+}
+
+/** The agent replays a result it has already attested once. */
+export function attemptReplay(agent = AGENT_ADDRESS) {
+  return attempt(() =>
+    readContract().executeGated.staticCall(ACTION_ID, 5, SPENT_RESULT_HASH, { from: agent }),
+  );
+}
+
+export type BoundaryStep = { amount: number; allowed: boolean; detail: string };
+
+/** Walk the exact edge of delegated authority: cap-1, cap, cap+1. */
+export async function walkBoundary(agent = AGENT_ADDRESS, cap = 10): Promise<BoundaryStep[]> {
+  const amounts = [Math.max(0, cap - 1), cap, cap + 1];
+  const steps: BoundaryStep[] = [];
+  for (const amount of amounts) {
+    const outcome = await simulateGate(agent, amount);
+    steps.push({
+      amount,
+      allowed: outcome.allowed,
+      detail: outcome.allowed ? "allowed" : outcome.detail,
+    });
+  }
+  return steps;
+}
+
 export function resultHash(agent: string, amount: number) {
   return keccak256(toUtf8Bytes(`${agent}:TRANSFER_MOCK:${amount}:${Date.now()}`));
 }

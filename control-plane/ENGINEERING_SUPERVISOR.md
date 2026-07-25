@@ -232,6 +232,44 @@
   address — set `VITE_GATE_ADDRESS=0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2`
   in `ui/.env.local`. ENV-2, BE-1b, BE-2 unchanged.
 
+## 2026-07-26 — BE-4 — Explorer verification and CLI proof
+
+- **Owner:** Claude. Worked on lane branch `lane/be-4-verify-and-prove` after
+  Tejas flagged that BE-3 and the ENV-1 close had gone straight to `main`,
+  against OP-1 Q6.
+- **Read:** `docs/MONAD-DEPLOYMENT.md`, `docs/TESTING.md`, `docs/SECURITY.md`,
+  `docs/OPEN-QUESTIONS.md` Q3/Q8/Q9.
+- **Source verification:** `forge verify-contract` against the Monad Sourcify
+  endpoint. Job `b0288c97-a865-4227-923e-38b26627bc85` completed with
+  `runtimeMatch: exact_match`, match id 544617, verified 2026-07-25T18:04:46Z.
+  `creationMatch` is null — runtime bytecode is proven to match the source,
+  creation bytecode was not matched. Stated as-is rather than rounded up to
+  "fully verified".
+- **Chain proof, reproduced end to end with `cast` against the live contract:**
+  1. principal registered agent "Atlas" — tx `0xf8b86a23…c8c0`, `AgentRegistered`;
+  2. principal set cap 10 on `TRANSFER_MOCK`, active — tx `0x0698117d…1dbb`;
+  3. read-back confirms principal, label, registered=true, cap=10, action id,
+     active=true;
+  4. agent attempted 100 against the cap — reverted `SpendCapExceeded(100, 10)`,
+     selector `0x605cd727` decoded, run as `cast call` so no gas was burned;
+  5. agent attempted 5 — tx `0x06366487…f982`, status 1, 124,348 gas;
+  6. receipt carries `ActionAttested` with topic0
+     `0x0293aa86…7aa8`, matching `cast keccak` of the event signature, binding
+     agent `0xd00e55…2030`, principal `0xae0617…8071`, action
+     `0x51eb1c38…cdc1`, amount 5, and the result hash.
+- **Demo state is now live and preconfigured** per OP-1 Q3, so registration and
+  policy stay off the critical path of a timed pitch. Amounts are abstract
+  policy units per Q8; no MON moved in any of these transactions.
+- **Known gap restated, not quietly dropped:** `ActionAttested` still omits the
+  nonce, so `attestationId` cannot be recomputed off-chain from the event alone.
+  That is BE-1b, and it remains a breaking ABI change that would invalidate this
+  address, this verification, and the demo state recorded above.
+- **Process correction:** this lane ran on a branch and goes to `main` via PR,
+  which is what Q6 required all along.
+- **Docs updated:** address manifest (verification block, demo state, proof
+  block, explorer URLs), lane board, session coordination, this log.
+- **Remains:** ENV-2 and DEP-1 (Cloudflare), FE-2/FE-3 can now point at a real
+  verified contract with live demo state, BE-1b, BE-2.
 ## 2026-07-26 — DEP-1 (partial) — Cloudflare Pages first deployment
 
 - **Owner:** Claude, on lane branch `lane/dep-1-cloudflare-preview`.

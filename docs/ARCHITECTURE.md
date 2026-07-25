@@ -28,6 +28,15 @@ Before deployment, identity overwrite/rotation semantics must be hardened per
 Serves the built static SPA from `ui/dist` using Git integration. It holds only
 public build configuration. No Worker/backend is required for the MVP.
 
+### No off-chain datastore
+
+The MVP uses no external database. Contract storage holds identity and policy;
+`executeGated` events are the audit trail. Adding an off-chain datastore
+(Supabase or otherwise) requires reopening `OPEN-QUESTIONS.md` Q13 and an
+approved architecture lane — a service key cannot ship in the static SPA, so it
+implies a Worker. Any future indexer is strictly derived, read-only, and
+rebuildable from chain logs; the contract stays source of truth.
+
 ## Frozen interface
 
 ```solidity

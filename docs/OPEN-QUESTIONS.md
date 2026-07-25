@@ -59,6 +59,33 @@ direct-main fix.
 
 **Answer:**
 
+### Q13 — Off-chain datastore
+
+Does the MVP add an off-chain database (Supabase/Postgres)?
+
+Note: "MonadDb" is not an option — it is the Monad node client's internal state
+storage engine, not an application database. The real choice is on-chain
+contract state versus an off-chain datastore.
+
+**Recommended:** no. `ARCHITECTURE.md` states no Worker/backend is required for
+the MVP, and contract storage plus `executeGated` events already serve as the
+persistence and audit layer. A Supabase service key cannot ship in a static
+Pages SPA, so any non-trivial use forces a Worker — a new approved architecture
+lane and a new secret-handling surface. Authoritative policy or identity data in
+a centralized database also undercuts the judge-facing claim of verifiable
+on-chain gating.
+
+If adopted later, scope it to the existing **Later** item (post-hackathon event
+indexer / audit API): strictly derived, read-only data rebuildable from chain
+logs, with the contract remaining source of truth.
+
+**Answer:** No. Tejas confirmed 2026-07-25: the MVP ships with no off-chain
+datastore. Contract storage and `executeGated` events are the persistence and
+audit layer. Supabase is deferred to the post-hackathon indexer item under
+**Later**, and only as strictly derived read-only data. Any agent proposing an
+off-chain datastore must reopen this question and get an architecture lane
+first.
+
 ## Important
 
 ### Q7 — Downstream action

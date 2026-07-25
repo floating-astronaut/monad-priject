@@ -367,3 +367,41 @@ footer a { color: #78727e; text-decoration: none; display: flex; align-items: ce
 .amount-input input {
   min-width: 0;
 }
+
+/* FE-7: attestations read from chain. The id check is the point — the page
+   recomputes the attestation id from the event and says whether it matches,
+   so a judge sees verification rather than a claim. */
+.audit-item.onchain {
+  flex-wrap: wrap;
+}
+
+.audit-item .id-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+}
+
+.audit-item .id-check.ok {
+  color: #7ee2b0;
+  background: rgba(56, 199, 137, 0.12);
+  border: 1px solid rgba(56, 199, 137, 0.22);
+}
+
+.audit-item .id-check.bad {
+  color: #ff9aa5;
+  background: rgba(255, 92, 108, 0.12);
+  border: 1px solid rgba(255, 92, 108, 0.22);
+}
+
+.audit-item a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: inherit;
+  opacity: 0.75;
+  font-size: 11.5px;
+}

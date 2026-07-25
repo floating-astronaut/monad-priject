@@ -1,4 +1,5 @@
 import {
+  AbiCoder,
   BrowserProvider,
   Contract,
   Interface,
@@ -6,6 +7,7 @@ import {
   id,
   keccak256,
   toUtf8Bytes,
+  zeroPadValue,
 } from "ethers";
 import gateAbi from "../../packages/abi/gate.json";
 import manifest from "../../packages/abi/addresses.json";
@@ -206,6 +208,79 @@ export function parseAttestation(receipt: { logs: readonly unknown[] }): Attesta
     }
   }
   return null;
+}
+
+export type ChainAttestation = {
+  attestationId: string;
+  agent: string;
+  principal: string;
+  actionId: string;
+  amount: string;
+  resultHash: string;
+  nonce: string;
+  txHash: string;
+  blockNumber: number;
+  /** True when the id in the log matches a keccak recomputed from the log. */
+  verified: boolean;
+};
+
+const ATTESTED_TOPIC = id(
+  "ActionAttested(bytes32,address,address,bytes32,uint256,bytes32,uint256)",
+);
+
+/**
+ * Recompute the attestation id from the event's own fields.
+ *
+ * This is the BE-1b property exercised in the browser: everything needed is in
+ * the log, so the page can check the receipt instead of taking it on trust.
+ */
+export function recomputeAttestationId(a: Omit<ChainAttestation, "verified">) {
+  const encoded = AbiCoder.defaultAbiCoder().encode(
+    ["uint256", "address", "address", "address", "bytes32", "uint256", "bytes32", "uint256"],
+    [CHAIN_ID, GATE_ADDRESS, a.agent, a.principal, a.actionId, a.amount, a.resultHash, a.nonce],
+  );
+  return keccak256(encoded);
+}
+
+/**
+ * Read attestations straight from the chain.
+ *
+ * The public Monad RPC caps `eth_getLogs` at a 100-block range, so this is a
+ * rolling window rather than full history — which is what a live demo needs:
+ * an attestation written from anywhere, including `cast`, shows up here within
+ * seconds without the page ever holding a key.
+ */
+export async function fetchRecentAttestations(
+  agent = AGENT_ADDRESS,
+  lookback = 99,
+): Promise<ChainAttestation[]> {
+  if (!GATE_ADDRESS) return [];
+  const latest = await readProvider.getBlockNumber();
+  const logs = await readProvider.getLogs({
+    address: GATE_ADDRESS,
+    topics: [ATTESTED_TOPIC, null, zeroPadValue(agent, 32)],
+    fromBlock: Math.max(0, latest - lookback),
+    toBlock: latest,
+  });
+
+  return logs.map((log) => {
+    const parsed = iface.parseLog({ topics: [...log.topics], data: log.data });
+    const base = {
+      attestationId: String(parsed?.args.attestationId),
+      agent: String(parsed?.args.agent),
+      principal: String(parsed?.args.principal),
+      actionId: String(parsed?.args.actionId),
+      amount: String(parsed?.args.amount),
+      resultHash: String(parsed?.args.resultHash),
+      nonce: String(parsed?.args.nonce),
+      txHash: log.transactionHash,
+      blockNumber: log.blockNumber,
+    };
+    return {
+      ...base,
+      verified: recomputeAttestationId(base).toLowerCase() === base.attestationId.toLowerCase(),
+    };
+  });
 }
 
 export function resultHash(agent: string, amount: number) {

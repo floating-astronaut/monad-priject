@@ -5,7 +5,7 @@
 
 ## Active
 
-### FE-3 — Agent fail/pass flow [IN VERIFICATION]
+### FE-3-SIGN — In-page signing path (untested) [OPEN]
 
 Owner: Claude
 Opened: 2026-07-26
@@ -103,6 +103,28 @@ Fixed. The rest of the acceptance list — keyboard, focus order, contrast,
 projector — is untested.
 
 ## Recently closed
+
+- **FE-7 — Attestations read from chain** [CLOSED 2026-07-26] — the page polls
+  `ActionAttested` logs for the agent and renders them, **and recomputes the
+  attestation id from the event to check it matches** before showing a verified
+  badge. Verified end to end headlessly: with the page open and empty, an
+  attestation written from `cast` (tx `0x1ae8b803…7430`) appeared within seconds
+  reading `ATTESTED · 5 units · nonce 1 · id verified from the log`, with a
+  working explorer link and zero mismatches.
+  This removes the browser-wallet dependency from the demo entirely: the agent
+  signs from its own keystore, which is how an autonomous agent actually signs,
+  and the page proves the result from chain.
+  Note: the public RPC caps `eth_getLogs` at a 100-block range, so this is a
+  rolling recent window, not full history. That is what a live demo needs, and
+  the empty state says so.
+- **FE-3 — Agent fail/pass flow** [CLOSED 2026-07-26] — acceptance met without a
+  browser wallet. A distinct agent shows a real over-cap denial (contract
+  `eth_call`, `SpendCapExceeded(100, 10)`), a successful attestation (surfaced
+  from chain by FE-7, id independently verified in the page), and explorer
+  proof. No simulated hash ever appears on the live path — asserted in the DOM.
+  Recorded rather than buried: **the in-page signing path has never been
+  exercised.** It is no longer on the demo track so it blocks nothing, but it is
+  untested code — tracked as FE-3-SIGN.
 
 - **ENV-2 — Cloudflare and GitHub access** [CLOSED 2026-07-26] — Tejas
   authorised the Cloudflare GitHub App. Project `monad-gate` is bound to

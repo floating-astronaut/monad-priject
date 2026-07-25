@@ -29,6 +29,7 @@ import {
   fetchChainState,
   fetchRecentAttestations,
   gateContract,
+  isValidAddress,
   LIVE,
   resultHash,
   shortAddress,
@@ -192,18 +193,34 @@ function App() {
   /** Shared write path: connect, verify the chain, submit, then confirm. */
   async function runSetup(
     action: string,
-    call: (contract: ReturnType<typeof gateContract>) => Promise<{ hash: string; wait: () => Promise<unknown> }>,
+    call: (
+      contract: ReturnType<typeof gateContract>,
+      from: string,
+    ) => Promise<{ hash: string; wait: () => Promise<unknown> }>,
   ) {
     setSetupBusy(action);
     setSetupStage("");
     setSetupHash("");
     setSetupMessage("");
+
+    // Validate before connecting, so a bad address fails here instead of
+    // inside ethers — an empty string reaches the provider as an ENS lookup
+    // and surfaces as an unreadable UNCONFIGURED_NAME error.
+    if (!isValidAddress(setupAgent)) {
+      setSetupStage("error");
+      setSetupMessage("Agent address is not a valid address.");
+      setSetupBusy("");
+      return;
+    }
+
     try {
       const connected = await connectWallet();
       setWallet(connected.address);
       await assertCorrectChain(connected.provider);
 
-      const tx = await call(gateContract(connected.signer));
+      // Use the address just returned by the wallet, never the `wallet` state:
+      // on the first click that state is still empty inside this closure.
+      const tx = await call(gateContract(connected.signer), connected.address);
       setSetupHash(tx.hash);
       setSetupStage("submitted");
       setSetupMessage(`${action} submitted`);
@@ -497,7 +514,9 @@ function App() {
                     <button
                       disabled={!liveMode || Boolean(setupBusy)}
                       onClick={() =>
-                        runSetup("Registration", (c) => c.registerAgent(setupAgent, wallet, setupLabel))
+                        runSetup("Registration", (c, from) =>
+                          c.registerAgent(setupAgent, from, setupLabel),
+                        )
                       }
                     >
                       {setupBusy === "Registration" ? <RefreshCw className="spin" size={14} /> : <Fingerprint size={14} />}

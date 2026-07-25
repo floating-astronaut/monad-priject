@@ -5,6 +5,7 @@ import {
   Interface,
   JsonRpcProvider,
   id,
+  isAddress,
   keccak256,
   toUtf8Bytes,
   zeroPadValue,
@@ -157,8 +158,20 @@ export function decodeGateError(error: unknown): { error: string; detail: string
       // not one of ours — fall through to the raw message
     }
   }
+  // Wallet-level failures are not contract errors. Ethers wraps them in a
+  // paragraph of JSON, which is useless on a projector.
+  const code = (error as { code?: string | number })?.code;
+  if (code === 4001 || code === "ACTION_REJECTED") {
+    return { error: "ACTION_REJECTED", detail: "Rejected in the wallet." };
+  }
+  if (code === "UNCONFIGURED_NAME") {
+    return { error: "BAD_ADDRESS", detail: "That is not a valid address." };
+  }
+  if (code === "INSUFFICIENT_FUNDS") {
+    return { error: "INSUFFICIENT_FUNDS", detail: "This account has no MON for gas." };
+  }
   const message = error instanceof Error ? error.message : String(error);
-  return { error: "UNKNOWN", detail: message.slice(0, 160) };
+  return { error: "UNKNOWN", detail: message.split(" (")[0].slice(0, 140) };
 }
 
 function extractRevertData(error: unknown): string | null {
@@ -285,6 +298,11 @@ export async function fetchRecentAttestations(
 
 export function resultHash(agent: string, amount: number) {
   return keccak256(toUtf8Bytes(`${agent}:TRANSFER_MOCK:${amount}:${Date.now()}`));
+}
+
+/** Guard before any write, so a bad address fails here and not inside ethers. */
+export function isValidAddress(value: string) {
+  return isAddress(value);
 }
 
 export function shortAddress(value: string) {

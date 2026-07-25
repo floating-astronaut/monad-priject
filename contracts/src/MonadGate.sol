@@ -46,13 +46,19 @@ contract MonadGate {
     event PolicySet(address indexed agent, uint256 maxSpend, bytes32 indexed allowedActionId, bool active);
     event PrincipalTransferred(address indexed agent, address indexed oldPrincipal, address indexed newPrincipal);
     event AgentRotated(address indexed oldAgent, address indexed newAgent, address indexed principal);
+    /// @notice Emitted for every allowed action.
+    /// @dev `nonce` is included so `attestationId` is recomputable off chain
+    ///      from this event alone (BE-1b). Without it a verifier holding the
+    ///      log still could not reproduce the id, which made the
+    ///      verifiability claim in SECURITY.md untrue.
     event ActionAttested(
         bytes32 indexed attestationId,
         address indexed agent,
         address indexed principal,
         bytes32 actionId,
         uint256 amount,
-        bytes32 resultHash
+        bytes32 resultHash,
+        uint256 nonce
     );
 
     /// @notice Bind an agent address to the calling principal.
@@ -137,18 +143,10 @@ contract MonadGate {
         }
         attestedResult[msg.sender][resultHash] = true;
 
+        uint256 nonce = attestationNonce++;
         attestationId = keccak256(
-            abi.encode(
-                block.chainid,
-                address(this),
-                msg.sender,
-                agent.principal,
-                actionId,
-                amount,
-                resultHash,
-                attestationNonce++
-            )
+            abi.encode(block.chainid, address(this), msg.sender, agent.principal, actionId, amount, resultHash, nonce)
         );
-        emit ActionAttested(attestationId, msg.sender, agent.principal, actionId, amount, resultHash);
+        emit ActionAttested(attestationId, msg.sender, agent.principal, actionId, amount, resultHash, nonce);
     }
 }

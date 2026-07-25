@@ -30,6 +30,7 @@ import {
   LIVE,
   resultHash,
   shortAddress,
+  parseAttestation,
   simulateGate,
 } from "./gate";
 import type { ChainState } from "./gate";
@@ -43,6 +44,8 @@ type Receipt = {
   reason?: string;
   /** The contract's own custom error, e.g. SpendCapExceeded(100, 10). */
   detail?: string;
+  attestationId?: string;
+  nonce?: string;
 };
 
 function nowLabel() {
@@ -231,8 +234,16 @@ function App() {
       };
       setReceipt(submitted);
       setHistory((items) => [submitted, ...items].slice(0, 4));
-      await tx.wait();
-      setReceipt({ ...submitted, detail: "Confirmed on Monad" });
+      const confirmed = await tx.wait();
+      const attestation = confirmed ? parseAttestation(confirmed) : null;
+      setReceipt({
+        ...submitted,
+        detail: attestation
+          ? `Confirmed · nonce ${attestation.nonce} · id recomputable from the event`
+          : "Confirmed on Monad",
+        attestationId: attestation?.attestationId,
+        nonce: attestation?.nonce,
+      });
       showToast("Attestation confirmed on Monad");
     } catch (error) {
       showToast(decodeGateError(error).detail);
@@ -437,6 +448,12 @@ function App() {
                   <div className="receipt-grid">
                     <span>Agent<strong>{shortAddress(agent)}</strong></span>
                     <span>Amount<strong>{amount} units</strong></span>
+                    {receipt.attestationId && (
+                      <span>Attestation<strong>{shortAddress(receipt.attestationId)}</strong></span>
+                    )}
+                    {receipt.nonce !== undefined && (
+                      <span>Nonce<strong>{receipt.nonce}</strong></span>
+                    )}
                   </div>
                   {receipt.hash?.startsWith("0x") ? (
                     <a className="proof-link" href={`${EXPLORER}/tx/${receipt.hash}`} target="_blank" rel="noreferrer">

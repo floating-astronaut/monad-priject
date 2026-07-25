@@ -83,19 +83,6 @@ GitHub source is now mirrored three ways (private Taurus-Ai-Corp, private
 GitLab, public floating-astronaut) — pick which remote Pages builds from
 before wiring it.
 
-### BE-1b — Attestation nonce in event [OPEN]
-
-Owner: Claude
-Opened: 2026-07-26
-Reading: `docs/SECURITY.md`, `docs/ARCHITECTURE.md`
-Acceptance: `ActionAttested` carries the nonce; `attestationId` is recomputable
-off-chain from the event alone, proven by a test; `packages/abi/gate.json`
-re-exported; UI decodes the new event shape
-Write-back: `docs/SECURITY.md` contract controls, `docs/ARCHITECTURE.md`
-Notes: split out of BE-1 deliberately — the only **breaking** ABI change in the
-BE-1 proposal, so it must land paired with the UI update rather than mid-lane.
-Until it lands, the verifiability claim in `SECURITY.md` is not met.
-
 ### BE-2 — Foundry verification suite [OPEN]
 
 Owner: Claude
@@ -110,6 +97,17 @@ grows further.
 
 ## Recently closed
 
+- **BE-1b — Attestation nonce in event** [CLOSED 2026-07-26] — `ActionAttested`
+  now carries the nonce, so `attestationId` is recomputable off chain from the
+  log alone. Three new tests, all red against the previous contract and green
+  against this one. Forced a redeploy, done in full: new contract
+  `0x6e93CE34DB89Cf14C1846Ea65967f5506477F908` (tx `0x047764f4…f1a1`, block
+  48042025), bytecode byte-identical to the artifact, source verified
+  `exact_match` (match 544618), demo state re-registered, deny/pass re-proved,
+  ABI re-exported, UI redeployed. The old address `0x7feaAb7D…37C2` is
+  superseded and recorded as such in the manifest.
+  **Proved against the live chain, not only in tests:** the id recomputed off
+  chain from the emitted event equals the id in the log.
 - **FE-6 — Amounts read as policy units** [CLOSED 2026-07-26] — every amount in
   the UI is now labelled in policy units: the cap field, the action input, the
   slider bounds, the denial copy, the attestation receipt and the audit strip.

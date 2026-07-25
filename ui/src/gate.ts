@@ -162,6 +162,40 @@ function extractRevertData(error: unknown): string | null {
   return null;
 }
 
+export type Attestation = {
+  attestationId: string;
+  nonce: string;
+  amount: string;
+  resultHash: string;
+};
+
+/**
+ * Decode `ActionAttested` from a transaction receipt.
+ *
+ * Since BE-1b the event carries the nonce, so everything needed to recompute
+ * `attestationId` off chain is in the log itself — this is what makes the
+ * receipt independently checkable rather than something the UI asserts.
+ */
+export function parseAttestation(receipt: { logs: readonly unknown[] }): Attestation | null {
+  for (const raw of receipt.logs) {
+    const log = raw as { topics: readonly string[]; data: string };
+    try {
+      const parsed = iface.parseLog({ topics: [...log.topics], data: log.data });
+      if (parsed?.name === "ActionAttested") {
+        return {
+          attestationId: String(parsed.args.attestationId),
+          nonce: String(parsed.args.nonce),
+          amount: String(parsed.args.amount),
+          resultHash: String(parsed.args.resultHash),
+        };
+      }
+    } catch {
+      // a log from somewhere else in the transaction
+    }
+  }
+  return null;
+}
+
 export function resultHash(agent: string, amount: number) {
   return keccak256(toUtf8Bytes(`${agent}:TRANSFER_MOCK:${amount}:${Date.now()}`));
 }

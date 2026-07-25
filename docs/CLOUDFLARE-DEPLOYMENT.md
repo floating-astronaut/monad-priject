@@ -90,6 +90,7 @@ Project:        monad-gate
 Production URL: https://monad-gate.pages.dev
 Deployment URL: https://c6f2ae8b.monad-gate.pages.dev
 Deployment ID:  c6f2ae8b-5624-4750-8f71-196e8bfa9dd8
+Superseded by:  846fc8eb (FE-3/FE-6 live wiring, same production URL)
 Branch/source:  main / fd798de
 Account:        718adb77270c9f6346604595009b55c4
 ```

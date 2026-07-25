@@ -70,5 +70,15 @@
       "eventTopic0": "0x0293aa86fd4ec23294d33bcee9ea8e664c937fe1ef6e09e02c6268abaea27aa8"
     },
     "limitation": "ActionAttested omits the nonce, so attestationId cannot be recomputed from the event alone. Open as BE-1b."
+  },
+  "hosting": {
+    "provider": "cloudflare-pages",
+    "project": "monad-gate",
+    "productionUrl": "https://monad-gate.pages.dev",
+    "deploymentUrl": "https://c6f2ae8b.monad-gate.pages.dev",
+    "deploymentId": "c6f2ae8b-5624-4750-8f71-196e8bfa9dd8",
+    "sourceCommit": "fd798de",
+    "method": "wrangler direct upload (Git integration pending ENV-2)",
+    "uiMode": "safe demo mode - not yet wired to the live contract (FE-2/FE-3)"
   }
 }

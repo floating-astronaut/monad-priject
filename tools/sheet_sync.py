@@ -176,6 +176,18 @@ def parse_secrets():
             for s in v.get("secrets", [])]
 
 
+def blocker(manifest, active):
+    """Derive the current blocker from state, never hardcode it."""
+    unfunded = [r[0] for r in parse_chain()
+                if r[0].strip() == "balance" and "UNFUNDED" in r[1]]
+    if unfunded:
+        return "ENV-1 - burner wallets unfunded"
+    if not manifest.get("gate"):
+        return "BE-3 - contract not deployed (wallets funded, path clear)"
+    open_lanes = ", ".join(sorted(r[0] for r in active))
+    return "open lanes: " + (open_lanes or "none")
+
+
 def build_status(lanes):
     active = [r for r in lanes if not r[2].startswith("CLOSED")]
     closed = [r for r in lanes if r[2].startswith("CLOSED")]
@@ -190,7 +202,7 @@ def build_status(lanes):
         ["lanes active", str(len(active))],
         ["lanes closed", str(len(closed))],
         ["contract deployed", "yes" if manifest.get("gate") else "NO — BE-3 pending"],
-        ["blocking now", "ENV-1 faucet funding (both burners at 0)"],
+        ["blocking now", blocker(manifest, active)],
         ["secrets tab", "testnet burners in the clear, by operator decision - "
                         "never put a mainnet or funded key here"],
     ]

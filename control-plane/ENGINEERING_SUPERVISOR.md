@@ -148,3 +148,43 @@
 - **Remains:** Tejas works ENV-1. BE-1b (nonce in event, breaking ABI + UI).
   BE-2 (fuzz/invariant/gas suite; decide whether to adopt `forge-std` over the
   hand-rolled `Vm` interface). Nothing is deployed — all evidence is local.
+
+## 2026-07-26 — ENV-1 — Burner wallets
+
+- **Owner:** Tejas, executed by Claude on operator instruction.
+- **Read:** `docs/SECURITY.md`, `docs/MONAD-DEPLOYMENT.md`,
+  `docs/OPEN-QUESTIONS.md` Q2, official Monad gas-pricing and reserve-balance
+  pages.
+- **Changed:** generated two distinct burners as encrypted Foundry keystores
+  (`monad-deployer`, `monad-agent`) with random 32-byte passwords stored 0400
+  outside the repo; recorded the public addresses in
+  `packages/abi/addresses.json`; documented handling in `docs/SECURITY.md`;
+  funded both wallets. Added `tools/sheet_sync.py`, a one-way publisher of the
+  control plane to the operator Google Sheet.
+- **Verified:** `cast chain-id` returns 10143 from the foundation RPC; both
+  keystores decrypt with their stored password files; principal != agent;
+  funding tx `0xef9933cfb0de37548e0875116365a97526a5ad1ba9ebd96abbdf01e5128f9491`
+  landed in block 48032490 with status 1; post-transfer balances read from chain
+  are 34.9978 MON (deployer/principal) and 15.0000 MON (agent); `git ls-files`
+  shows no keystore, password, or key file tracked in any of the three mirrors.
+- **Costed the demo from measurements, not guesses:** `forge test --gas-report`
+  gives deploy 914,621 gas, `registerAgent` 92,612, `setPolicy` 95,520,
+  `executeGated` 81,316 allow / 24,758 deny. Monad charges the **gas limit, not
+  gas used**, so BE-3 should set limits explicitly rather than let a wallet pad
+  them. One full deploy+setup cycle costs ~0.146 MON at 102 gwei; the 34.99 MON
+  on the deployer is roughly 230 redeploys of headroom.
+- **Material finding:** ENV-1's stated acceptance also required "Cloudflare can
+  access GitHub". That half was never started and blocks a different lane
+  (DEP-1, not BE-3), so it was split into ENV-2 rather than held closed
+  dishonestly or left blocking the chain path.
+- **Operator decision recorded:** Tejas directed that generated wallets and
+  secrets also be mirrored in the clear to the private operator sheet. The old
+  `SECURITY.md` claim that keys never leave the keystore was false once that
+  landed, and was amended rather than left standing. The limit is written into
+  the doc: testnet burners only, never a mainnet key or a token with real blast
+  radius.
+- **Docs updated:** lane graph (ENV-1 narrowed, ENV-2 added, DEP-1 dependency),
+  lane board, session coordination, `SECURITY.md`, `DOC-SYSTEM.md` (generated
+  views), this log.
+- **Remains:** BE-3 may now deploy. ENV-2 (Cloudflare/GitHub) unstarted. BE-1b
+  and BE-2 unchanged.

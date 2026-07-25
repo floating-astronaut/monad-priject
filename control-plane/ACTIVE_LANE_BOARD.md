@@ -5,30 +5,18 @@
 
 ## Active
 
-### ENV-1 — Burner wallets and access [IN PROGRESS]
+### ENV-2 — Cloudflare and GitHub access [OPEN]
 
-Owner: Tejas (wallet generation executed by Claude on operator instruction 2026-07-26)
-Opened: 2026-07-25
-Reading: `docs/SECURITY.md`, `docs/MONAD-DEPLOYMENT.md`
-Acceptance: two burner addresses recorded (deployer/principal, agent) with **no
-private keys in the repo**; both funded with testnet MON; agent address handed
-to Claude for the address manifest
-Write-back: `packages/abi/addresses.json`, `docs/SECURITY.md`
-Notes: per OP-1 Q2. Blocks BE-3 (deployment). Does **not** block BE-1 or BE-2 —
-Claude works those against local Anvil in the meantime.
-
-Progress 2026-07-26:
-
-- Two distinct burners generated as encrypted Foundry keystores on the build
-  box; addresses recorded in `packages/abi/addresses.json` and `docs/SECURITY.md`.
-  deployer/principal `0xae06174FFd44850FAC43cf8F7D0ECB0848678071`,
-  agent `0xd00e55Da854b53F02Ff0fe8DD6a35f68a14E2030`. No key in Git.
-- Verified: RPC `https://testnet-rpc.monad.xyz` returns chain ID 10143; both
-  keystores decrypt with their stored password files.
-- **Remaining, and it is Tejas only:** faucet funding. Both balances are 0 wei.
-  `https://faucet.monad.xyz` gates on a human/social check, so no agent can do
-  this. The lane stays open until both addresses hold testnet MON.
-- Cloudflare/GitHub access half of this lane is untouched and still open.
+Owner: Tejas
+Opened: 2026-07-26
+Reading: `docs/CLOUDFLARE-DEPLOYMENT.md`, `docs/OPEN-QUESTIONS.md` Q5
+Acceptance: the Cloudflare account named in OP-1 Q5 can build this repo from
+Git; a Pages project exists and is bound to the correct branch
+Notes: split out of ENV-1 on 2026-07-26 — see `docs/IMPLEMENTATION-LANES.md`.
+Blocks DEP-1 only; nothing on the chain path waits on it. Unstarted. The
+GitHub source is now mirrored three ways (private Taurus-Ai-Corp, private
+GitLab, public floating-astronaut) — pick which remote Pages builds from
+before wiring it.
 
 ### BE-1b — Attestation nonce in event [OPEN]
 
@@ -57,6 +45,14 @@ grows further.
 
 ## Recently closed
 
+- **ENV-1 — Burner wallets** [CLOSED 2026-07-26] — two distinct burners
+  generated as encrypted Foundry keystores and funded. deployer/principal
+  `0xae06174FFd44850FAC43cf8F7D0ECB0848678071` holds 34.9978 MON, agent
+  `0xd00e55Da854b53F02Ff0fe8DD6a35f68a14E2030` holds 15.0000 MON, both above the
+  10 MON `user_reserve_balance` threshold. 50 MON claimed to the deployer, 15
+  forwarded in tx `0xef9933cfb0de37548e0875116365a97526a5ad1ba9ebd96abbdf01e5128f9491`
+  (block 48032490, status 1). No key in Git. **BE-3 is unblocked.** Cloudflare
+  access moved to ENV-2.
 - **BE-1 — Contract authorization hardening** [CLOSED 2026-07-26] — agent
   seizure and privilege escalation fixed and regression-tested; `PrincipalIsAgent`
   and `ResultAlreadyAttested` added; `transferPrincipal` / `rotateAgent` added

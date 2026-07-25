@@ -16,11 +16,25 @@ Owner: Tejas
 Acceptance: blocking items in `OPEN-QUESTIONS.md` answered.  
 Write-back: open questions and affected contracts.
 
-### ENV-1 — Burner wallets and access
+### ENV-1 — Burner wallets
 
 Owner: Tejas  
 Acceptance: public deployer/principal/agent addresses recorded without keys;
-wallets funded; Cloudflare can access GitHub.
+both wallets funded with testnet MON.  
+Blocks: BE-3.
+
+> Split 2026-07-26. This lane originally also carried "Cloudflare can access
+> GitHub". The wallet half completed while the hosting half had not started, and
+> the two block different lanes — wallets block BE-3, hosting blocks DEP-1.
+> Keeping them joined would have held BE-3 behind unrelated work. Hosting moved
+> to ENV-2.
+
+### ENV-2 — Cloudflare and GitHub access
+
+Owner: Tejas  
+Acceptance: the Cloudflare account in OP-1 Q5 can build this repo from Git;
+a Pages project exists and is bound to the correct branch.  
+Blocks: DEP-1.
 
 ## Phase B — backend and chain
 
@@ -87,7 +101,7 @@ and reduced-motion checks pass.
 ### DEP-1 — Cloudflare preview
 
 Owner: Claude  
-Depends on: FE-3  
+Depends on: FE-3, ENV-2  
 Acceptance: Git preview builds from `ui/`, public env correct, SPA fallback and
 console checks pass.
 

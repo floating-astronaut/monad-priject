@@ -6,8 +6,9 @@
 |-------|---------|------|---------|--------|
 | Claude | 2026-07-25 | OP-1 write-back | docs, control-plane | done |
 | Claude | 2026-07-25 | BE-1 | `contracts/`, `docs/ARCHITECTURE.md` | claimed |
-| Tejas | 2026-07-25 | ENV-1 | burner wallets, funding | open — funding only |
-| Claude | 2026-07-26 | ENV-1 wallet generation | keystores, `packages/abi/addresses.json`, docs | done |
+| Tejas | 2026-07-25 | ENV-1 | burner wallets, funding | closed 2026-07-26 |
+| Claude | 2026-07-26 | ENV-1 | keystores, `packages/abi/addresses.json`, docs, funding tx | done |
+| Claude | 2026-07-26 | tooling | `tools/sheet_sync.py`, operator sheet | done |
 
 Codex: withdrawn 2026-07-25, no longer claims surfaces.
 

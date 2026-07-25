@@ -10,7 +10,12 @@ from `packages/abi/gate.json`.
 
 ### Interface handoff (`packages/abi/`)
 
-`gate.json` is the only contract surface consumed by the UI.
+`gate.json` is the only contract surface consumed by the UI. It is **generated
+from the compiler artifact** (BE-3, 2026-07-26) and must never be hand-edited.
+It now carries the full ABI — 9 functions, 5 events, 9 custom errors — so the UI
+can decode a revert reason instead of showing a raw selector. The previous
+hand-written 4-function file was a strict subset, so nothing that worked before
+broke.
 `addresses.json` records chain ID, RPC, explorer, deployed address, the
 canonical `TRANSFER_MOCK` action ID, and the public burner addresses for the
 deployer/principal and the agent. It holds public values only — never a key.

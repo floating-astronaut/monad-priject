@@ -45,6 +45,18 @@ grows further.
 
 ## Recently closed
 
+- **BE-3 — Deployment and ABI export** [CLOSED 2026-07-26] — `MonadGate`
+  deployed to Monad testnet at `0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2`,
+  tx `0xe8d138528b0620917745415599d10ac544298c4269e93e7c8b2b0d65406875ee`,
+  block 48036909, 1,199,511 gas, 0.126 MON. Dry run first, then broadcast.
+  Deployed bytecode is byte-identical to the local artifact. `gate.json`
+  regenerated from the artifact; `addresses.json` records chain, contract, tx,
+  block, deployer, solc 0.8.24, optimizer 200, forge version, commit, and ABI
+  sha256. **Not source-verified yet — that is BE-4.**
+  ⚠️ **This deployment is disposable.** BE-1b changes `ActionAttested`, which is
+  a breaking ABI change, so landing BE-1b means redeploying and re-recording
+  every value above. Do not put this address in front of judges as final until
+  BE-1b is either landed or explicitly dropped.
 - **ENV-1 — Burner wallets** [CLOSED 2026-07-26] — two distinct burners
   generated as encrypted Foundry keystores and funded. deployer/principal
   `0xae06174FFd44850FAC43cf8F7D0ECB0848678071` holds 34.9978 MON, agent

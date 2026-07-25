@@ -9,6 +9,7 @@
 | Tejas | 2026-07-25 | ENV-1 | burner wallets, funding | closed 2026-07-26 |
 | Claude | 2026-07-26 | ENV-1 | keystores, `packages/abi/addresses.json`, docs, funding tx | done |
 | Claude | 2026-07-26 | tooling | `tools/sheet_sync.py`, operator sheet | done |
+| Claude | 2026-07-26 | BE-3 | `contracts/`, `packages/abi/`, deploy | done |
 
 Codex: withdrawn 2026-07-25, no longer claims surfaces.
 

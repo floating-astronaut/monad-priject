@@ -188,3 +188,46 @@
   views), this log.
 - **Remains:** BE-3 may now deploy. ENV-2 (Cloudflare/GitHub) unstarted. BE-1b
   and BE-2 unchanged.
+
+## 2026-07-26 — BE-3 — Deployment and ABI export
+
+- **Owner:** Claude, on operator instruction.
+- **Read:** `docs/MONAD-DEPLOYMENT.md`, `docs/BUILD-SPEC.md`,
+  `docs/ARCHITECTURE.md`, `docs/SECURITY.md`.
+- **Pre-broadcast gates, all green:** `forge fmt --check` clean, `forge clean`
+  + `forge build` successful, `forge test` 14 passed / 0 failed. Simulated
+  without `--broadcast` first: chain 10143, 1,199,511 gas, 0.2459 MON estimated.
+- **Changed:** deployed `MonadGate` to Monad testnet; regenerated
+  `packages/abi/gate.json` from the compiler artifact; recorded the full
+  deployment in `packages/abi/addresses.json`; pinned the testnet RPC in
+  `foundry.toml` so `--rpc-url monad_testnet` resolves from config.
+- **Verified, not assumed:** deployed bytecode fetched with `cast code` is
+  byte-identical (7,968 chars) to `deployedBytecode.object` in the local
+  artifact — what is on chain is what this repo builds. A read call through the
+  regenerated ABI returns the expected unregistered state for the agent
+  address. `actionIdTransferMock` in the manifest equals `cast keccak
+  "TRANSFER_MOCK"` and equals the UI's `id("TRANSFER_MOCK")`, so contract, UI,
+  and manifest agree on the action being gated.
+- **Address:** `0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2`, deploy tx
+  `0xe8d138528b0620917745415599d10ac544298c4269e93e7c8b2b0d65406875ee`,
+  block 48036909, deployer `0xae06174FFd44850FAC43cf8F7D0ECB0848678071`,
+  cost 0.126 MON. Deployer balance after: 34.8719 MON.
+- **Material finding:** `gate.json` was a hand-written 4-function subset, which
+  `MONAD-DEPLOYMENT.md` forbids for a deployed ABI. Regenerating it added the 5
+  events and 9 custom errors, which FE-2/FE-3 need in order to show a decoded
+  revert rather than a bare selector. The old surface was a strict subset, so
+  the regeneration could not break existing UI calls — checked signature by
+  signature before overwriting.
+- **Scope held:** source verification and the `cast` deny/pass proof are BE-4,
+  not this lane. `sourceVerified` is recorded as `false` and no claim of
+  verification is made anywhere.
+- **Standing risk:** BE-1b alters `ActionAttested`. It is the one breaking ABI
+  change outstanding, so it invalidates this address and every recorded value.
+  Deploying before it was an operator decision; a redeploy costs 0.126 MON and
+  about two minutes.
+- **Docs updated:** `ARCHITECTURE.md`, address manifest, ABI, lane board,
+  session coordination, this log.
+- **Remains:** BE-4 (verify source on MonadVision/Sourcify, reproduce
+  register/policy/deny/pass with `cast`). FE-2/FE-3 can now point at a real
+  address — set `VITE_GATE_ADDRESS=0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2`
+  in `ui/.env.local`. ENV-2, BE-1b, BE-2 unchanged.

@@ -19,9 +19,28 @@ points here — one talk track, so the wording cannot drift again.
 value moves anywhere in this system, and the moment a judge thinks 5 MON changed
 hands the demo is misleading.
 
+## No browser wallet is needed
+
+The demo runs end to end without MetaMask, and that is the better story rather
+than a workaround:
+
+- **identity and policy** are read from the contract on page load;
+- **the denial** is an `eth_call` — the contract's own decision, no signature;
+- **the attestation** is signed by the agent from its own keystore with `cast`,
+  which is how an autonomous agent actually signs. A human clicking a wallet
+  popup is the thing this product exists to replace;
+- **the page then shows the attestation appear**, read from chain logs, and
+  recomputes the attestation id from the event to prove it matches.
+
+A wallet is only required if you want the browser itself to sign. That path
+exists in the UI but is not on the demo track.
+
 ## The 90-second track
 
 Roughly 210 spoken words. Read it once against a timer before presenting.
+
+Have two things on screen: the site, and a terminal in `contracts/` with the
+preflight exports already set.
 
 **0:00–0:12 — the problem**
 
@@ -46,21 +65,29 @@ the contract, not typed in.*
 > refusal is not my frontend deciding — the contract evaluated it on Monad and
 > returned SpendCapExceeded, one hundred against ten."
 
-**0:45–1:10 — allow**
+**0:45–1:05 — allow**
 
-*Click **Set amount to 5 units**, run again, sign as the agent.*
+*Switch to the terminal. The agent signs for itself:*
 
-> "Same agent, same action, now inside policy. Monad accepts it and writes an
-> attestation binding the agent, the principal, the action, the amount and the
-> result."
+```bash
+cast send $GATE "executeGated(bytes32,uint256,bytes32)" \
+  $(cast keccak "TRANSFER_MOCK") 5 $(cast keccak "demo-$(date +%s)") \
+  --account monad-agent --password-file ~/.monad-gate/agent.pass --rpc-url $RPC
+```
 
-**1:10–1:25 — prove**
+> "Same agent, same action, now inside policy — and the agent signs this itself
+> from its own key, which is the whole point. No human clicking a wallet."
 
-*Open the receipt on MonadVision.*
+**1:05–1:20 — prove**
 
-> "That is a real Monad event, not a dashboard claim. And the attestation id is
-> recomputable from the log alone — anyone can rebuild it from the event and
-> check we invented nothing."
+*Go back to the page. Within a few seconds the attestation appears in Recent
+decisions on its own.*
+
+> "The page didn't take my word for that. It read the event from Monad,
+> recomputed the attestation id from the log, and is telling you the id matches.
+> That is verification, not a dashboard claim."
+
+*Click through to MonadVision for the receipt.*
 
 **1:25–1:30 — close**
 
@@ -105,7 +132,7 @@ controls**, connect the principal wallet, set the cap back to 10 and resume.
 
 ## Fallback ladder
 
-1. **Production + live Monad** — the intended path.
+1. **Production + live Monad** — the intended path, and it needs no wallet.
 2. **Last-known-good deployment URL** + live Monad. Every deployment keeps its
    own permanent URL; the previous one is listed in the Cloudflare dashboard.
 3. **Local Vite** (`cd ui && npm run dev`) + live Monad. The address comes from

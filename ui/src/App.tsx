@@ -27,6 +27,7 @@ import {
   decodeGateError,
   EXPLORER,
   fetchChainState,
+  fetchRecentAttestations,
   gateContract,
   LIVE,
   resultHash,
@@ -34,7 +35,7 @@ import {
   parseAttestation,
   simulateGate,
 } from "./gate";
-import type { ChainState } from "./gate";
+import type { ChainAttestation, ChainState } from "./gate";
 
 type StepState = "done" | "active" | "idle";
 type Receipt = {
@@ -90,6 +91,29 @@ function App() {
   const [liveMode] = useState(LIVE);
   const [chain, setChain] = useState<ChainState | null>(null);
   const [chainError, setChainError] = useState("");
+  const [onchain, setOnchain] = useState<ChainAttestation[]>([]);
+
+  // Attestations are read from the chain on a short poll. An attestation
+  // written from anywhere — including `cast` at a terminal — appears here
+  // within seconds, so the demo never needs this page to hold a key.
+  useEffect(() => {
+    if (!LIVE) return;
+    let stop = false;
+    const tick = async () => {
+      try {
+        const found = await fetchRecentAttestations();
+        if (!stop) setOnchain(found.slice().reverse());
+      } catch {
+        // a poll that fails is not worth surfacing; the next one retries
+      }
+    };
+    tick();
+    const timer = window.setInterval(tick, 4000);
+    return () => {
+      stop = true;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   // Live identity and policy are read from the contract on load, so judges see
   // real state before any wallet is connected.
@@ -626,8 +650,31 @@ function App() {
             <button onClick={resetDemo}><RefreshCw size={13} /> Reset demo</button>
           </div>
           <div className="audit-list">
-            {history.length === 0 && <p>Run the 100-unit action first. Let the red screen tell the story.</p>}
-            {history.map((item, index) => (
+            {liveMode && onchain.length > 0 && (
+              <>
+                {onchain.map((item) => (
+                  <div className="audit-item onchain" key={item.attestationId}>
+                    <span className="audit-status allowed" />
+                    <strong>ATTESTED</strong>
+                    <span>
+                      TRANSFER_MOCK · {item.amount} units · nonce {item.nonce}
+                    </span>
+                    <span className={`id-check ${item.verified ? "ok" : "bad"}`}>
+                      {item.verified ? <Check size={11} /> : <X size={11} />}
+                      {item.verified ? "id verified from the log" : "id mismatch"}
+                    </span>
+                    <a href={`${EXPLORER}/tx/${item.txHash}`} target="_blank" rel="noreferrer">
+                      {shortAddress(item.txHash)} <ExternalLink size={12} />
+                    </a>
+                  </div>
+                ))}
+              </>
+            )}
+            {liveMode && onchain.length === 0 && (
+              <p>No attestation in the last 100 blocks. Run one — from this page or from `cast` — and it appears here.</p>
+            )}
+            {!liveMode && history.length === 0 && <p>Run the 100-unit action first. Let the red screen tell the story.</p>}
+            {history.filter((item) => item.decision === "denied" || !liveMode).map((item, index) => (
               <div className="audit-item" key={`${item.time}-${index}`}>
                 <span className={`audit-status ${item.decision}`} />
                 <strong>{item.decision === "allowed" ? "ATTESTED" : "DENIED"}</strong>

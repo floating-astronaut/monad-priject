@@ -558,3 +558,37 @@
 - **Remains, and it is Tejas:** the backup recording on two devices, which
   cannot be made until the wallet path has been run once (FE-3). DEP-2 go/no-go,
   VER-1, SHIP-1.
+
+## 2026-07-26 — FE-7 — Attestations read from chain
+
+- **Owner:** Claude, lane branch `lane/fe-7-chain-attestations`. Opened after
+  Tejas asked why the demo needed MetaMask at all.
+- **The question was right and my framing was wrong.** I had been treating "run
+  the browser wallet path" as a prerequisite for the demo when it was only a
+  prerequisite for closing FE-3 as written. An autonomous agent signing through
+  a human's wallet popup is the opposite of what this product argues for.
+- **Changed:** the page polls `ActionAttested` logs for the registered agent,
+  renders them with amount and nonce, and **recomputes the attestation id from
+  the event's own fields** before showing a verified badge. That is the BE-1b
+  property exercised in the browser — the page verifies the receipt instead of
+  asserting it.
+- **Verified end to end, headlessly, which the signing path never allowed:**
+  with the page open and showing its empty state, an attestation was written
+  from `cast` (tx `0x1ae8b803…7430`). Within seconds the page displayed
+  `ATTESTED · TRANSFER_MOCK · 5 units · nonce 1`, the badge
+  `id verified from the log`, a correct MonadVision link, and zero mismatches.
+- **Constraint found and designed around:** the public Monad RPC caps
+  `eth_getLogs` at a 100-block range. Full history is not available to a static
+  page, so this is a rolling recent window — which is what a live demo needs,
+  and the empty state says so rather than implying history.
+- **Consequence for the demo:** no browser wallet anywhere. Identity and policy
+  read from chain, the denial is the contract's own `eth_call`, the agent signs
+  with its own keystore via `cast`, and the page proves the result from the log.
+  `DEMO-OPERATIONS.md` now leads with this and says why it is the better story.
+- **Lane bookkeeping, honestly:** FE-3 closes on this evidence. The in-page
+  signing path is still untested code, so it moved to its own lane (FE-3-SIGN)
+  rather than being quietly counted as done. FE-2's writes are in the same
+  position and stay open; Q3 preconfigures setup and `cast` can do it.
+- **Docs updated:** `DEMO-OPERATIONS.md`, lane board, this log.
+- **Remains:** FE-3-SIGN and FE-2 only matter if you want the browser to sign.
+  FE-4, DEP-2, VER-1, the DEMO-1 recording, SHIP-1.

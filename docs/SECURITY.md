@@ -14,13 +14,32 @@
 
 ## Contract controls
 
-- unrelated principal cannot claim existing agent;
-- only stored principal mutates policy;
-- execution authenticates `msg.sender`;
-- deny paths cannot emit attestation;
-- event binds agent, principal, action, amount, result, nonce;
-- rotation/replay semantics are explicit and tested;
-- no upgrade/admin backdoor unless Tejas approves it.
+Status as of BE-1 (2026-07-26), verified by `forge test` — 14 passed, 0 failed.
+
+- unrelated principal cannot claim existing agent — **enforced**
+  (`AgentAlreadyRegistered`), regression-tested;
+- principal and agent may not be the same address — **enforced**
+  (`PrincipalIsAgent`), per OP-1 Q2;
+- only stored principal mutates policy, rotates, or transfers authority —
+  **enforced**, tested for `setPolicy`, `transferPrincipal`, `rotateAgent`;
+- rotation carries policy and clears the retired slot — **enforced**, so a
+  retired address keeps no active cap;
+- execution authenticates `msg.sender` — **enforced** (pre-existing);
+- deny paths cannot emit attestation — **enforced**; the replay check runs after
+  every policy check so a denied action never consumes a result hash;
+- replay: a result hash cannot be attested twice by the same agent —
+  **enforced** (`ResultAlreadyAttested`), per OP-1 Q9;
+- no upgrade/admin backdoor unless Tejas approves it — **none exists**;
+- event binds agent, principal, action, amount, result, nonce — **NOT met**.
+  `ActionAttested` omits the nonce, so `attestationId` cannot be recomputed
+  off-chain from the event alone. Open as lane BE-1b; it is the only breaking
+  ABI change and must land with the matching UI update.
+
+**Known limitation.** `attestedResult` is keyed `(agent, resultHash)`, so
+`rotateAgent` moves an identity to an address with an empty replay set and a
+previously attested hash can be reused. Covered by a passing test
+(`testRotationResetsReplayProtection`). Global keying would close it but would
+let any agent burn another agent's result hash. Operator decision.
 
 ## Secret classification
 

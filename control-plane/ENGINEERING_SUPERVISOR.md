@@ -92,3 +92,59 @@
   keys in repo). Claude works BE-1 starting with the rotation/deactivation
   function surface proposed into `ARCHITECTURE.md` for sign-off before any
   Solidity is written.
+
+## 2026-07-26 — BE-1 — Contract authorization hardening
+
+- **Owner:** Claude
+- **Read:** `docs/BUILD-SPEC.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`,
+  `docs/LOCAL-DEVELOPMENT.md`, `docs/MONAD-DEPLOYMENT.md`,
+  `docs/IMPLEMENTATION-LANES.md`, `contracts/src/MonadGate.sol`,
+  `contracts/test/MonadGate.t.sol`.
+- **Method:** proposed the interface into `ARCHITECTURE.md` first (commit
+  `ce7ccd8`), then committed five FAILING tests (`87d33f2` red run) before
+  touching the contract, so the fix is evidenced by red→green rather than by
+  assertion.
+- **Reproduced the flaw:** against the pre-BE-1 contract,
+  `[FAIL: SEIZED: unrelated caller overwrote a registered agent]` and
+  `[FAIL: ESCALATED: attacker raised the spend cap after seizing the agent]`.
+  `registerAgent` checked only `msg.sender == principal`, which any caller
+  satisfies by naming itself, and never checked prior registration.
+- **Changed:** `contracts/src/MonadGate.sol` — added `AgentAlreadyRegistered`,
+  `PrincipalIsAgent`, `ResultAlreadyAttested`, `attestedResult` mapping,
+  `transferPrincipal`, `rotateAgent`, `PrincipalTransferred`, `AgentRotated`;
+  replay check ordered after all policy checks. `contracts/test/MonadGateAuth.t.sol`
+  — 11 new tests across two suites.
+- **Verified:** `forge test` → 14 passed, 0 failed, 0 skipped (3 pre-existing
+  tests still green, so no regression). `forge build` clean under
+  Solc 0.8.24. `forge fmt --check` clean.
+- **Found beyond the brief:** (1) policies survived re-registration — latent
+  before, live once rotation existed; handled in `rotateAgent`. (2)
+  `ActionAttested` omits the nonce `SECURITY.md` requires it to bind, so
+  `attestationId` is not recomputable off-chain — the verifiability claim does
+  not currently hold; opened as BE-1b. (3) `forge fmt --check` was already
+  failing before this lane on untouched code and would have blocked BE-3's
+  pre-broadcast gate; normalized.
+- **Known limitation, tested not hidden:** `attestedResult` is keyed
+  `(agent, resultHash)`, so `rotateAgent` gives an identity an empty replay set
+  and a previously attested hash can be reused.
+  `testRotationResetsReplayProtection` passes and documents this. Global keying
+  closes it but allows cross-agent griefing. Operator decision, one line either
+  way.
+- **Scope call:** nonce-in-event deferred to BE-1b because it is the only
+  breaking ABI change in the proposal; everything shipped here is additive, so
+  a client built against the pre-BE-1 ABI still works.
+- **Process note:** the proposal asked for sign-off before implementation and
+  Tejas gave a go-ahead on the lane rather than clause-by-clause approval.
+  Proceeded on the written proposal under operator-instruction precedence. Two
+  items remain confirmable and cheap to reverse: the replay key and the absence
+  of a `deactivateAgent` function.
+- **Environment:** Monad Foundry `1.7.1-monad-v1.0.0` installed via the
+  documented `foundry.category.xyz` script, after inspecting it (2.2KB, fetches
+  `foundryup` from `github.com/category-labs/foundry` branch `monad`).
+- **Docs updated:** `docs/ARCHITECTURE.md` (frozen interface now includes both
+  rotation functions; implementation record; known limitation),
+  `docs/SECURITY.md` (per-control status, the unmet nonce control stated
+  plainly), lane board, this log.
+- **Remains:** Tejas works ENV-1. BE-1b (nonce in event, breaking ABI + UI).
+  BE-2 (fuzz/invariant/gas suite; decide whether to adopt `forge-std` over the
+  hand-rolled `Vm` interface). Nothing is deployed — all evidence is local.

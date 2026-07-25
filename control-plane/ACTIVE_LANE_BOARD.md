@@ -17,21 +17,39 @@ Write-back: `packages/abi/addresses.json`, `docs/SECURITY.md`
 Notes: per OP-1 Q2. Blocks BE-3 (deployment). Does **not** block BE-1 or BE-2 —
 Claude works those against local Anvil in the meantime.
 
-### BE-1 — Contract authorization hardening [OPEN]
+### BE-1b — Attestation nonce in event [OPEN]
 
 Owner: Claude
-Opened: 2026-07-25
-Reading: `docs/BUILD-SPEC.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY.md`
-Acceptance: an unrelated caller cannot overwrite an existing registration; only
-the current principal may rotate, re-policy, or deactivate; duplicate
-`resultHash` reverts; authorization tests pass under `forge test`
-Write-back: `docs/ARCHITECTURE.md` frozen interface (new function signatures
-require Tejas sign-off before implementation), `docs/SECURITY.md`
-Notes: closes the overwrite flaw recorded against DOC-1. Implements OP-1 Q1, Q8,
-Q9. First step is proposing the function surface — not writing Solidity.
+Opened: 2026-07-26
+Reading: `docs/SECURITY.md`, `docs/ARCHITECTURE.md`
+Acceptance: `ActionAttested` carries the nonce; `attestationId` is recomputable
+off-chain from the event alone, proven by a test; `packages/abi/gate.json`
+re-exported; UI decodes the new event shape
+Write-back: `docs/SECURITY.md` contract controls, `docs/ARCHITECTURE.md`
+Notes: split out of BE-1 deliberately — the only **breaking** ABI change in the
+BE-1 proposal, so it must land paired with the UI update rather than mid-lane.
+Until it lands, the verifiability claim in `SECURITY.md` is not met.
+
+### BE-2 — Foundry verification suite [OPEN]
+
+Owner: Claude
+Opened: 2026-07-26
+Depends on: BE-1 (closed)
+Reading: `docs/TESTING.md`, `docs/MONAD-DEPLOYMENT.md`
+Acceptance: unit/fuzz boundaries, event assertions, gas snapshot green under
+Monad Foundry; clean-machine commands documented
+Notes: BE-1 left 14 hand-rolled tests using a local `Vm` interface rather than
+`forge-std`. BE-2 should decide whether to adopt `forge-std` before the suite
+grows further.
 
 ## Recently closed
 
+- **BE-1 — Contract authorization hardening** [CLOSED 2026-07-26] — agent
+  seizure and privilege escalation fixed and regression-tested; `PrincipalIsAgent`
+  and `ResultAlreadyAttested` added; `transferPrincipal` / `rotateAgent` added
+  with policy carried and the retired slot cleared. `forge test`: 14 passed, 0
+  failed. `forge fmt --check` clean (was already failing before this lane).
+  Nonce-in-event deferred to BE-1b.
 - **OP-1 — Operator decisions** [CLOSED 2026-07-25] — all six blocking questions
   answered (principal-controlled identity lifecycle; two burners; preconfigured
   demo state; MonadVision primary; existing Cloudflare account on `pages.dev`;

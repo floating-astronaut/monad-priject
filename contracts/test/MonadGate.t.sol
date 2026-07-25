@@ -24,9 +24,7 @@ contract MonadGateTest {
     }
 
     function testDenyOverCap() public {
-        vm.expectRevert(
-            abi.encodeWithSelector(MonadGate.SpendCapExceeded.selector, 100, 10)
-        );
+        vm.expectRevert(abi.encodeWithSelector(MonadGate.SpendCapExceeded.selector, 100, 10));
         vm.prank(agent);
         gate.executeGated(action, 100, keccak256("result"));
     }

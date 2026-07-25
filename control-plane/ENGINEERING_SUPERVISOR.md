@@ -482,3 +482,43 @@
 - **Remains:** one human wallet run closes FE-2 and FE-3 together — pause then
   resume the policy is the cheapest check and exercises `setPolicy` both ways.
   FE-4's keyboard, focus, contrast and projector checks are untested. ENV-2.
+
+## 2026-07-26 — ENV-2 + DEP-1 — Cloudflare Git integration and preview close
+
+- **Owner:** Tejas authorised the GitHub App; Claude verified and closed both
+  lanes from `lane/dep-1-close`.
+- **Verified through the Cloudflare API rather than trusting the dashboard:**
+  source `github`, repo `floating-astronaut/monad-priject`, production branch
+  `main`, root `ui`, build `npm run build`, output `dist`, previews for all
+  branches.
+- **Caught immediately after connection:** the first git build (`24abade8`) came
+  from `main` at `d552f87`, which did not yet contain FE-2 — so the git build
+  and the live alias disagreed, and production was about to silently lose the
+  principal panel and the mobile fix. Raised before it settled rather than after
+  someone noticed a missing panel. Merging PR #8 resolved it: build `831d98c6`
+  from `c862d6a` now serves the same bundle the alias serves.
+- **Reproducibility check:** a local build of `main` produces byte-identical
+  asset hashes to what Cloudflare serves, so production is rebuildable from the
+  repo alone.
+- **Per-branch previews proven, not assumed:** pushing `lane/dep-1-close`
+  produced preview deployment `2d078df8` with no manual step. That is the
+  DEP-1 acceptance item that could not be checked before today.
+- **A fix attempted twice and reverted, recorded rather than buried:** a missing
+  file under `/assets/` returns the SPA shell with status 200 instead of 404.
+  Attempt one, a `404` status rule in `_redirects`, was ignored — Pages only
+  honours that status when it targets a literally-named `404.html`. Attempt two,
+  adding `404.html`, produced correct 404s but broke the SPA fallback, because
+  Pages gives a root `404.html` precedence over the catch-all. Both were
+  verified as failures against real preview deployments and reverted; the branch
+  was reset so the working configuration is what ships. Getting both behaviours
+  requires a Pages Function, which `ARCHITECTURE.md` and the Worker decision
+  gate reserve for Tejas. Impact is small: no client-side router, single unsplit
+  bundle, so a stale asset request means a full page load that fetches the
+  current `index.html`.
+- **Docs updated:** lane board (both lanes closed, limitation recorded),
+  `CLOUDFLARE-DEPLOYMENT.md` (git integration is now the normal path, manual
+  upload demoted to fallback with a warning that it gets overwritten), manifest
+  hosting block, this log.
+- **Remains:** FE-2 and FE-3 need the one wallet run. FE-4's keyboard, focus,
+  contrast and projector checks. DEP-2 is Tejas's go/no-go, VER-1 and DEMO-1
+  follow it.

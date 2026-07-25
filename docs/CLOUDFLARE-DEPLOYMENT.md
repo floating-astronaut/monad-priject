@@ -100,12 +100,19 @@ Verified: `/` returns 200; a deep link returns 200 and serves the SPA shell via
 and contains the deployed contract address; the browser console is clean, no
 errors and no Vite overlay.
 
-**Git integration is still not connected.** Connecting a repo requires
-authorizing the Cloudflare GitHub App in the dashboard, which is an interactive
-OAuth flow — that is ENV-2 and belongs to Tejas. Until it is done there are no
-per-branch preview builds, and every deploy is a manual `wrangler pages deploy`
-from the build box. That is the kill switch `IMPLEMENTATION-LANES.md` already
-anticipated, used deliberately.
+**Git integration connected 2026-07-26 (ENV-2).** Pushing `main` builds and
+deploys production; pushing any branch builds a preview. The manual
+`wrangler pages deploy` below is now the fallback, not the normal path — and a
+manual upload to `main` will be overwritten by the next git build, so do not use
+it to ship anything that is not committed.
+
+**Known limitation:** a missing file under `/assets/` returns the SPA shell with
+status 200, not a 404. `_redirects` cannot express both that and the SPA
+fallback on Pages — a `404` status rule is ignored unless it targets a
+literally-named `404.html`, and adding `404.html` overrides the SPA catch-all for
+every unmatched path. Both were tried and reverted. Fixing it properly needs a
+Pages Function, which requires operator approval under the Worker decision gate
+below.
 
 Redeploy:
 

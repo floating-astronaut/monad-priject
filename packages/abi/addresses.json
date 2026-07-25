@@ -48,11 +48,12 @@
     "provider": "cloudflare-pages",
     "project": "monad-gate",
     "productionUrl": "https://monad-gate.pages.dev",
-    "deploymentUrl": "https://5b276aba.monad-gate.pages.dev",
-    "deploymentId": "5b276aba",
-    "sourceCommit": "lane/be-1b-attestation-nonce",
-    "method": "wrangler direct upload (Git integration pending ENV-2)",
-    "uiMode": "live - identity, policy and gate decisions read from the deployed contract; receipt decodes ActionAttested incl. nonce"
+    "deploymentId": "831d98c6",
+    "deploymentUrl": "https://831d98c6.monad-gate.pages.dev",
+    "sourceCommit": "c862d6a",
+    "method": "git-connected (GitHub), production branch main, root ui",
+    "previewBuilds": "enabled for all branches - proven by preview 2d078df8",
+    "uiMode": "live - identity, policy and gate decisions read from the deployed contract"
   },
   "demoState": {
     "note": "Preconfigured per OP-1 Q3. Abstract policy units per Q8 - no MON moves.",

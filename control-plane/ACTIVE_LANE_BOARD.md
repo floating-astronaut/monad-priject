@@ -64,6 +64,29 @@ writes, so they need the principal key signing in a browser wallet. Same gap as
 FE-3 — one human run closes both. Pausing then resuming is the cheapest check
 and it exercises `setPolicy` in both directions.
 
+### DEMO-1 — Pitch and fallback pack [IN PROGRESS]
+
+Owner: Claude, with Tejas owning the recording
+Opened: 2026-07-26
+Depends on: VER-1 (not met — run early on operator instruction)
+Acceptance: live talk track under 90 seconds, backup video on two devices,
+URLs/addresses/README ready
+Notes: talk track rewritten against what actually shipped and timed — 176 spoken
+words, about 70 seconds at 150 wpm, leaving room for clicks. Preflight is now
+copy-pasteable `cast` commands with expected values. Evidence card carries real
+addresses and tx hashes. Q&A expanded to cover what a judge can now actually
+check: that the denial is the contract's own, that the attestation id is
+recomputable from the log, and the rotation replay limit.
+`DEMO.md` retired into `DEMO-OPERATIONS.md` — it held a second copy of the talk
+track that still said "100 MON" and "Set amount to 5 MON", against OP-1 Q8 and
+the shipped UI. That drift is the reason the rule exists, so it is written up in
+`DOC-SYSTEM.md` as the worked example.
+**New in the fallback ladder:** a deny-only level. The refusal is an `eth_call`,
+so if the wallet or the agent balance fails on stage, the denial half of the
+story is still genuinely live.
+**Remaining, and it is Tejas:** record the fail-to-pass run and put it on two
+devices. Cannot be done before the wallet path has been run once — see FE-3.
+
 ### FE-4 — Responsive and accessibility polish [OPEN]
 
 Owner: Claude

@@ -122,10 +122,12 @@ grows further.
   regenerated from the artifact; `addresses.json` records chain, contract, tx,
   block, deployer, solc 0.8.24, optimizer 200, forge version, commit, and ABI
   sha256. **Not source-verified yet — that is BE-4.**
-  ⚠️ **This deployment is disposable.** BE-1b changes `ActionAttested`, which is
-  a breaking ABI change, so landing BE-1b means redeploying and re-recording
-  every value above. Do not put this address in front of judges as final until
-  BE-1b is either landed or explicitly dropped.
+  ⚠️ **Superseded 2026-07-26.** BE-1b landed the breaking `ActionAttested`
+  change and this address was redeployed as
+  `0x6e93CE34DB89Cf14C1846Ea65967f5506477F908`. Everything in this entry is
+  history — the address is dead and must not be shown to judges. The live
+  values, including the Sourcify verification this entry says is pending, are in
+  `packages/abi/addresses.json`, which also records the supersession.
 - **ENV-1 — Burner wallets** [CLOSED 2026-07-26] — two distinct burners
   generated as encrypted Foundry keystores and funded. deployer/principal
   `0xae06174FFd44850FAC43cf8F7D0ECB0848678071` holds 34.9978 MON, agent

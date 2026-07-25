@@ -5,6 +5,41 @@
 
 ## Active
 
+### FE-6 — Amounts must read as policy units, not MON [OPEN]
+
+Owner: Claude
+Opened: 2026-07-26
+Reading: `docs/OPEN-QUESTIONS.md` Q8, `docs/SECURITY.md` demo truth
+Acceptance: no "MON" string appears next to a policy amount anywhere in the UI;
+amounts render as policy units; the cap, the slider bounds, and the result copy
+all agree
+Notes: found during DEP-1 browser verification of the deployed site. The live
+page currently renders "100 MON", "CAP 10", "120 MON" and "Run the 100 MON
+action first". OP-1 Q8 answered this explicitly: amounts are **abstract policy
+units**, "no MON figures are displayed and no decimal conversion exists
+anywhere, so no judge can conclude that value moved." The deployed UI
+contradicts that answer, and it is exactly the misreading Q8 was written to
+prevent. Judge-facing, so worth fixing before the pitch.
+
+### DEP-1 — Cloudflare preview [IN PROGRESS]
+
+Owner: Claude
+Opened: 2026-07-26
+Depends on: FE-3 (not met — run early on operator instruction), ENV-2
+Acceptance: Git preview builds from `ui/`, public env correct, SPA fallback and
+console checks pass
+Notes: site is **live** at https://monad-gate.pages.dev (deployment
+`c6f2ae8b-5624-4750-8f71-196e8bfa9dd8`, source `fd798de`) by Wrangler direct
+upload. SPA fallback works, bundle byte-matches the local build, console clean.
+Two reasons the lane is not closed:
+1. **Not Git-connected** — needs the dashboard OAuth in ENV-2, so no per-branch
+   preview builds yet. Every deploy is manual from the box.
+2. **The page is still in safe demo mode.** `VITE_GATE_ADDRESS` is baked into
+   the bundle, but the UI shows the placeholder actors `0xA6E1…6E17` /
+   `0xA11C…11CE`, not the real registered agent. Wiring it to the live contract
+   is FE-2/FE-3. The page does disclose "Safe demo mode · no funds will move",
+   so nothing on it is dishonest — but it is not yet proof of anything on chain.
+
 ### ENV-2 — Cloudflare and GitHub access [OPEN]
 
 Owner: Tejas

@@ -231,3 +231,39 @@
   register/policy/deny/pass with `cast`). FE-2/FE-3 can now point at a real
   address — set `VITE_GATE_ADDRESS=0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2`
   in `ui/.env.local`. ENV-2, BE-1b, BE-2 unchanged.
+
+## 2026-07-26 — DEP-1 (partial) — Cloudflare Pages first deployment
+
+- **Owner:** Claude, on lane branch `lane/dep-1-cloudflare-preview`.
+- **Read:** `docs/CLOUDFLARE-DEPLOYMENT.md`, `docs/OPEN-QUESTIONS.md` Q5/Q8,
+  `docs/IMPLEMENTATION-LANES.md` kill switches.
+- **Changed:** built `ui/` against the live contract config, added
+  `ui/public/_redirects` for SPA fallback, created Pages project `monad-gate`,
+  deployed `dist` by direct upload. Corrected the repository name in the
+  Cloudflare runbook — it named `Taurus-Ai-Corp/MONAD-Gate-`, which is not the
+  working repo. Recorded the deployment in the runbook and the manifest.
+- **Verified in a real browser, not by assumption:** `/` returns 200; a deep
+  link returns 200 and serves the SPA shell; the served bundle is
+  byte-identical to the local build and carries the deployed address; console
+  is clean — no errors, no Vite overlay; the page renders fully.
+- **Deliberate use of the documented kill switch:** Git-connected Pages needs
+  the Cloudflare GitHub App authorized in the dashboard, an interactive OAuth
+  flow no agent can complete headlessly. `IMPLEMENTATION-LANES.md` already
+  anticipated this ("Claude direct-uploads `ui/dist` with Wrangler"), so that
+  path was used rather than inventing one. ENV-2 still owns the Git connection.
+- **Lane deliberately left open.** DEP-1's acceptance says *Git* preview builds,
+  and it depends on FE-3, which is not done. Both are unmet. Marking it closed
+  because a URL resolves would have been the easy lie.
+- **Material finding, judge-facing:** the deployed UI labels policy amounts in
+  MON — "100 MON", "CAP 10", "120 MON", "Run the 100 MON action first". OP-1 Q8
+  answered this the other way: amounts are abstract policy units and "no MON
+  figures are displayed ... so no judge can conclude that value moved." The
+  shipped UI contradicts an answered operator decision, and it is precisely the
+  misreading Q8 existed to prevent. Opened as FE-6.
+- **Second finding:** the page is still in safe demo mode with placeholder
+  actors despite `VITE_GATE_ADDRESS` being baked in, so it currently proves
+  nothing about the chain. It does disclose "Safe demo mode · no funds will
+  move", which satisfies the `SECURITY.md` demo-truth rule. Wiring live state
+  is FE-2/FE-3.
+- **Remains:** ENV-2 (dashboard OAuth, Tejas), FE-2/FE-3 (live wiring), FE-6
+  (units), then DEP-1 can actually close.

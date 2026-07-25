@@ -17,7 +17,7 @@ Sources:
 ## Dashboard configuration
 
 ```text
-Repository: Taurus-Ai-Corp/MONAD-Gate-
+Repository: floating-astronaut/monad-priject
 Production branch: main
 Root directory: ui
 Preset: React (Vite)
@@ -80,6 +80,42 @@ npx wrangler pages deploy dist --project-name monad-gate --branch main
 ```
 
 Source: [Wrangler Pages commands](https://developers.cloudflare.com/workers/wrangler/commands/pages/).
+
+## Deployment record (DEP-1, 2026-07-26)
+
+First deployment is live, via the **CLI fallback**, not Git integration.
+
+```text
+Project:        monad-gate
+Production URL: https://monad-gate.pages.dev
+Deployment URL: https://c6f2ae8b.monad-gate.pages.dev
+Deployment ID:  c6f2ae8b-5624-4750-8f71-196e8bfa9dd8
+Branch/source:  main / fd798de
+Account:        718adb77270c9f6346604595009b55c4
+```
+
+Verified: `/` returns 200; a deep link returns 200 and serves the SPA shell via
+`public/_redirects`; the served JS bundle is byte-identical to the local build
+and contains the deployed contract address; the browser console is clean, no
+errors and no Vite overlay.
+
+**Git integration is still not connected.** Connecting a repo requires
+authorizing the Cloudflare GitHub App in the dashboard, which is an interactive
+OAuth flow — that is ENV-2 and belongs to Tejas. Until it is done there are no
+per-branch preview builds, and every deploy is a manual `wrangler pages deploy`
+from the build box. That is the kill switch `IMPLEMENTATION-LANES.md` already
+anticipated, used deliberately.
+
+Redeploy:
+
+```bash
+cd ui && source ~/.cloudflare/env
+VITE_GATE_ADDRESS=0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2 \
+VITE_RPC_URL=https://testnet-rpc.monad.xyz \
+VITE_EXPLORER_BASE=https://testnet.monadvision.com \
+VITE_CHAIN_ID=10143 npm run build
+wrangler pages deploy dist --project-name monad-gate --branch main
+```
 
 ## Rollback
 

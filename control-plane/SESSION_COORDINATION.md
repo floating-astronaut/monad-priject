@@ -10,6 +10,7 @@
 | Claude | 2026-07-26 | ENV-1 | keystores, `packages/abi/addresses.json`, docs, funding tx | done |
 | Claude | 2026-07-26 | tooling | `tools/sheet_sync.py`, operator sheet | done |
 | Claude | 2026-07-26 | BE-3 | `contracts/`, `packages/abi/`, deploy | done |
+| Claude | 2026-07-26 | DEP-1 | `ui/`, Cloudflare Pages | in progress |
 
 Codex: withdrawn 2026-07-25, no longer claims surfaces.
 

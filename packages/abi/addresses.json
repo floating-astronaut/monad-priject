@@ -28,5 +28,15 @@
       "contract": "https://testnet.monadvision.com/address/0x7feaAb7D9634E6F614e28a42E800E6a7237d37C2",
       "deployTx": "https://testnet.monadvision.com/tx/0xe8d138528b0620917745415599d10ac544298c4269e93e7c8b2b0d65406875ee"
     }
+  },
+  "hosting": {
+    "provider": "cloudflare-pages",
+    "project": "monad-gate",
+    "productionUrl": "https://monad-gate.pages.dev",
+    "deploymentUrl": "https://c6f2ae8b.monad-gate.pages.dev",
+    "deploymentId": "c6f2ae8b-5624-4750-8f71-196e8bfa9dd8",
+    "sourceCommit": "fd798de",
+    "method": "wrangler direct upload (Git integration pending ENV-2)",
+    "uiMode": "safe demo mode - not yet wired to the live contract (FE-2/FE-3)"
   }
 }

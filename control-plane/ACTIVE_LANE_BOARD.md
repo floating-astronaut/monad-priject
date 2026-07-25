@@ -104,6 +104,24 @@ projector — is untested.
 
 ## Recently closed
 
+- **FE-2-FIX — Empty principal on first setup click** [CLOSED 2026-07-26] —
+  found by Tejas running the real wallet flow: **Register agent** failed with
+  `UNCONFIGURED_NAME (value="")`. Cause was a stale closure — the button passed
+  the `wallet` React state, which is still empty on the first click because
+  `runSetup` connects the wallet *after* that closure was created. Ethers took
+  the empty string for an ENS name and produced an unreadable error.
+  Fixed by threading the freshly connected address into the callback and never
+  reading the state there, plus address validation before connecting so bad
+  input fails fast without a wallet popup.
+  **Verified by capturing the calldata**: `registerAgent` now sends
+  `argPrincipal = the connected account` where it previously sent an empty
+  string. Blank input renders "Agent address is not a valid address."
+  Also cleaned wallet-level errors — a rejection now reads "Rejected in the
+  wallet." instead of a paragraph of ethers JSON, which matters on a projector.
+  Side effect worth noting: this exercised the in-page signing path end to end
+  up to the signature for the first time, which materially de-risks FE-3-SIGN
+  without closing it.
+
 - **FE-7 — Attestations read from chain** [CLOSED 2026-07-26] — the page polls
   `ActionAttested` logs for the agent and renders them, **and recomputes the
   attestation id from the event to check it matches** before showing a verified

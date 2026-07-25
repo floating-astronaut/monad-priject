@@ -592,3 +592,41 @@
 - **Docs updated:** `DEMO-OPERATIONS.md`, lane board, this log.
 - **Remains:** FE-3-SIGN and FE-2 only matter if you want the browser to sign.
   FE-4, DEP-2, VER-1, the DEMO-1 recording, SHIP-1.
+
+## 2026-07-26 — FE-8 — Attack scenarios and deck
+
+- **Owner:** Claude, lane branch `lane/fe-8-attack-scenarios`. Prompted by
+  Tejas pointing at `feat/demo-site` on `Taurus-Ai-Corp/MONAD-Gate-`, which
+  another session built. That repo was read only — nothing was pushed to it.
+- **What was worth taking:** their scenario design answers a different question
+  than ours did. Our UI demonstrated the spend cap — *how much*. Theirs
+  demonstrates *who decides*: an agent trying to raise its own cap, and a
+  stranger assigning liability to someone who never consented. The second is the
+  BE-1 vulnerability turned into a live demonstration, and it is the most
+  product-relevant refusal in the set.
+- **Rebuilt, not copied:** both scenarios were re-implemented against our
+  contract and our chain layer, and re-verified on chain first. Both return
+  `NotPrincipal()` — confirmed with `cast` before any UI work, then confirmed
+  again in the deployed page with zero allowed results.
+- **Also ported the deck** to `/deck.html` as a static page in `ui/public`, so
+  it needs no router and no bundle change. Six slides, keyboard navigation,
+  scroll snap, our palette. Verified: six slides, counter reaches 6/6 under
+  keyboard nav, no horizontal overflow.
+- **Two errors corrected rather than inherited.** Their deck says "four ways to
+  be refused"; the contract has six distinct refusal paths, four of which are
+  reproducible with no state change. Their deck also says post-quantum
+  signatures and Hedera anchoring are "specified, not built" — post-quantum
+  appears nowhere in either repo and Hedera appears once, in `PRODUCT.md`, in
+  the explicitly out-of-scope list. Ours says *not built, and not designed
+  either*. An unsupported "specified" invites a question with no good answer.
+- **A premise checked and rejected:** their code switches explorers away from
+  MonadVision, commenting that it "sits behind a Cloudflare challenge and 403s
+  non-browser clients". Both explorers 403 a `curl` equally, and MonadVision
+  loaded the transaction fine in a real browser — title, tx data, no challenge.
+  The behaviour is bot protection reacting to headless requests, not a browser
+  problem. OP-1 Q4 stands.
+- **Noted for the record, not acted on:** that branch hardcodes the superseded
+  pre-BE-1b contract `0x7feaAb7D…`, whose `ActionAttested` carries no nonce, so
+  the recomputability claim would be false there. Reported to Tejas; the repo is
+  not ours to change.
+- **Docs updated:** lane board, this log.

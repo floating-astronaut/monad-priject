@@ -405,3 +405,102 @@ footer a { color: #78727e; text-decoration: none; display: flex; align-items: ce
   opacity: 0.75;
   font-size: 11.5px;
 }
+
+/* FE-8: attack surface. The cap answers "how much"; these answer "who
+   decides", which is what a compromised agent actually attacks. */
+.attack-panel .attack-row + .attack-row {
+  margin-top: 10px;
+}
+
+.attack-button {
+  width: 100%;
+  display: grid;
+  gap: 3px;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.attack-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(131, 104, 247, 0.35);
+}
+
+.attack-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attack-button:focus-visible {
+  outline: 2px solid rgba(139, 108, 255, 0.75);
+  outline-offset: 2px;
+}
+
+.attack-button strong {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.attack-button em {
+  font-style: normal;
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.attack-result {
+  display: grid;
+  gap: 5px;
+  margin-top: 7px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+}
+
+.attack-result.refused {
+  background: rgba(93, 228, 168, 0.09);
+  border-color: rgba(93, 228, 168, 0.22);
+}
+
+.attack-result.allowed {
+  background: rgba(255, 110, 125, 0.1);
+  border-color: rgba(255, 110, 125, 0.25);
+}
+
+.attack-result.pending {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+}
+
+.attack-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  letter-spacing: 0.07em;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.attack-result.allowed .attack-verdict {
+  color: var(--red);
+}
+
+.attack-result code {
+  font-family: "DM Mono", monospace;
+  font-size: 11.5px;
+  overflow-wrap: anywhere;
+}
+
+.attack-why {
+  color: var(--muted);
+  font-size: 11.5px;
+}

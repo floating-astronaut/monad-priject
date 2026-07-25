@@ -66,6 +66,18 @@ export function gateContract(signer: Awaited<ReturnType<typeof connectWallet>>["
   return new Contract(GATE_ADDRESS, gateAbi, signer);
 }
 
+/** Confirm the wallet is actually on Monad testnet before offering to write. */
+export async function assertCorrectChain(
+  provider: Awaited<ReturnType<typeof connectWallet>>["provider"],
+) {
+  const network = await provider.getNetwork();
+  if (Number(network.chainId) !== CHAIN_ID) {
+    throw new Error(
+      `Wallet is on chain ${network.chainId}. Switch to Monad testnet (${CHAIN_ID}) before writing.`,
+    );
+  }
+}
+
 export type ChainState = {
   agent: string;
   principal: string;

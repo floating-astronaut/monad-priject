@@ -198,3 +198,172 @@ footer a { color: #78727e; text-decoration: none; display: flex; align-items: ce
   .audit-item time { display: none; }
 }
 
+
+/* FE-2 principal setup. Collapsed by default: Q3 preconfigures the demo, so
+   this must be available for questions without competing with the demo path. */
+.setup-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.setup-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.setup-toggle span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+}
+
+.setup-toggle em {
+  font-style: normal;
+  font-size: 12px;
+  opacity: 0.55;
+}
+
+.setup-toggle:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.setup-body {
+  display: grid;
+  gap: 12px;
+  padding: 4px 20px 20px;
+}
+
+.setup-field {
+  display: grid;
+  gap: 5px;
+}
+
+.setup-field span {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.setup-field input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(9, 6, 20, 0.6);
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+}
+
+.setup-field input:focus-visible,
+.setup-toggle:focus-visible,
+.setup-actions button:focus-visible {
+  outline: 2px solid rgba(139, 108, 255, 0.75);
+  outline-offset: 2px;
+}
+
+.setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.setup-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.setup-actions button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.setup-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.setup-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.setup-status strong {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.setup-status.submitted { background: rgba(139, 108, 255, 0.12); }
+.setup-status.confirmed { background: rgba(56, 199, 137, 0.12); }
+.setup-status.error { background: rgba(255, 92, 108, 0.12); }
+
+.setup-status a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: inherit;
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .setup-toggle,
+  .setup-actions button {
+    transition: none;
+  }
+}
+
+/* Mobile clipping fix, found while verifying FE-2.
+   `.app-shell` sets `overflow: hidden`, so overflowing content is silently
+   clipped rather than producing a horizontal scrollbar — which is why a
+   `scrollWidth > innerWidth` check could never detect it. The grid items
+   defaulted to `min-width: auto`, so they refused to shrink below their
+   min-content width and the panels rendered 438px wide inside a 351px column.
+   At 375px roughly 75px of every panel was cut off, including the identity
+   addresses. Pre-existing; FE-2 only surfaced it. */
+.workspace > *,
+.identity-card,
+.identity-main,
+.principal-row,
+.policy-field {
+  min-width: 0;
+}
+
+.identity-card code,
+.principal-row code,
+.policy-field code,
+.reason-code code,
+.receipt-grid strong {
+  overflow-wrap: anywhere;
+}
+
+.setup-field input,
+.amount-input input {
+  min-width: 0;
+}

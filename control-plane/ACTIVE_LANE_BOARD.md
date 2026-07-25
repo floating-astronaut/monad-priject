@@ -35,6 +35,50 @@ confirm the receipt links to the tx on MonadVision. The same path already
 succeeded via `cast` in BE-4, so the contract side is proven; what is unproven
 is the browser signing path.
 
+### FE-2 — Principal setup flow [IN VERIFICATION]
+
+Owner: Claude
+Opened: 2026-07-26
+Depends on: ABI freeze (done)
+Acceptance: correct-chain wallet can register and set/pause policy; UI shows
+submission, receipt, and decoded errors
+Notes: shipped as a collapsed "Principal controls" panel. Q3 preconfigures the
+demo, so this must not compete with the demo path — but Q3 also says setup stays
+runnable live if judges ask, which is why it exists at all.
+
+Verified on the deployed site without a wallet:
+
+- collapsed by default; the demo path is unchanged (100 units still returns a
+  real `SpendCapExceeded(100, 10)` from the contract);
+- fields prefill from chain state — agent `0xd00e…2030`, label Atlas, cap 10;
+- with no wallet: "Connect the principal wallet to register or change policy";
+- a connected non-principal is warned by address that the contract will reject
+  the write with `NotPrincipal`, before spending gas to find out;
+- writes go through a shared path that connects, asserts chain 10143, shows
+  Included with the tx hash and explorer link, then Confirmed, then re-reads
+  chain state; failures render the decoded custom error, not a raw selector;
+- console clean, no MON strings anywhere in the page.
+
+**Not verified, and why the lane is not closed:** registering and pausing are
+writes, so they need the principal key signing in a browser wallet. Same gap as
+FE-3 — one human run closes both. Pausing then resuming is the cheapest check
+and it exercises `setPolicy` in both directions.
+
+### FE-4 — Responsive and accessibility polish [OPEN]
+
+Owner: Claude
+Opened: 2026-07-26
+Depends on: FE-2, FE-3
+Acceptance: projector, 375 px phone, keyboard, focus, contrast, disabled/loading,
+and reduced-motion checks pass
+Notes: opened with one defect already found and fixed during FE-2 — see that
+lane's evidence. `.app-shell` sets `overflow: hidden`, so overflowing content is
+clipped instead of producing a horizontal scrollbar, and grid items defaulted to
+`min-width: auto`. Panels rendered 438 px wide inside a 351 px column: at 375 px
+roughly 75 px of every panel was cut off, including the identity addresses.
+Fixed. The rest of the acceptance list — keyboard, focus order, contrast,
+projector — is untested.
+
 ### DEP-1 — Cloudflare preview [IN PROGRESS]
 
 Owner: Claude

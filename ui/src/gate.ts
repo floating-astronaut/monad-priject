@@ -296,6 +296,48 @@ export async function fetchRecentAttestations(
   });
 }
 
+/** A wallet with no relationship to this contract. Used to prove refusals. */
+export const STRANGER = "0x000000000000000000000000000000000000dEaD";
+
+export type AttackResult = {
+  /** True when the contract refused, which is the outcome we want. */
+  refused: boolean;
+  error: string;
+  detail: string;
+};
+
+async function attempt(run: () => Promise<unknown>): Promise<AttackResult> {
+  try {
+    await run();
+    return {
+      refused: false,
+      error: "ALLOWED",
+      detail: "The contract permitted this. That is a failure — report it.",
+    };
+  } catch (error) {
+    return { refused: true, ...decodeGateError(error) };
+  }
+}
+
+/**
+ * A compromised agent tries to raise its own spend cap.
+ *
+ * Run as `eth_call` from the agent address, so it costs nothing and writes
+ * nothing — the refusal is the deployed contract evaluating real state.
+ */
+export function attemptSelfEscalation(agent = AGENT_ADDRESS, newCap = 1000) {
+  return attempt(() =>
+    readContract().setPolicy.staticCall(agent, newCap, ACTION_ID, true, { from: agent }),
+  );
+}
+
+/** A stranger registers its own bot and names someone else as the liable principal. */
+export function attemptLiabilityAssignment(principal: string) {
+  return attempt(() =>
+    readContract().registerAgent.staticCall(STRANGER, principal, "evil-bot", { from: STRANGER }),
+  );
+}
+
 export function resultHash(agent: string, amount: number) {
   return keccak256(toUtf8Bytes(`${agent}:TRANSFER_MOCK:${amount}:${Date.now()}`));
 }

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deck — MONAD | Gate</title>
+<meta name="description" content="Six slides. A permission layer for AI agents, live on Monad testnet.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    color-scheme:dark; --purple:#8368f7; --purple-light:#b7a6ff; --green:#5de4a8;
+    --red:#ff6e7d; --muted:#97929f; --line:rgba(255,255,255,.09); --ink:#f5f2f7;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:#09090b;color:var(--ink);font-family:Manrope,sans-serif;
+    background-image:linear-gradient(rgba(255,255,255,.017) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.017) 1px,transparent 1px);
+    background-size:52px 52px;
+  }
+  #slides{height:100vh;overflow-y:auto;scroll-snap-type:y mandatory}
+  .slide{
+    min-height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;
+    justify-content:center;padding:clamp(1.5rem,6vw,5rem);max-width:1100px;margin:0 auto;
+  }
+  .eyebrow{
+    font-family:"DM Mono",monospace;font-size:.72rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--purple-light);margin:0 0 1.4rem
+  }
+  h1{font-size:clamp(2rem,5.4vw,4rem);line-height:1.04;letter-spacing:-.035em;margin:0 0 1.5rem;font-weight:800}
+  h1 .dim{color:var(--muted)}
+  p.lede{font-size:clamp(1rem,1.7vw,1.3rem);line-height:1.55;color:#d7d2de;max-width:44ch;margin:0 0 1rem}
+  p.small{font-size:.95rem;color:var(--muted);max-width:56ch;line-height:1.6}
+  .mono{font-family:"DM Mono",monospace}
+  pre{
+    font-family:"DM Mono",monospace;font-size:clamp(.8rem,1.3vw,1rem);line-height:1.9;
+    background:rgba(20,19,24,.82);border:1px solid var(--line);border-radius:14px;
+    padding:1.2rem 1.4rem;overflow-x:auto;margin:1.2rem 0 0
+  }
+  .ok{color:var(--green)} .no{color:var(--red)} .pl{color:var(--purple-light)}
+  nav.bar{
+    position:fixed;inset:auto 0 0 0;display:flex;justify-content:space-between;
+    align-items:center;padding:.7rem clamp(1rem,4vw,2.5rem);font-size:.75rem;
+    color:var(--muted);background:linear-gradient(transparent,rgba(9,9,11,.9));
+    font-family:"DM Mono",monospace;pointer-events:none
+  }
+  nav.bar a{color:var(--muted);text-decoration:none;pointer-events:auto}
+  nav.bar a:hover{color:var(--ink)}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div id="slides">
+
+  <section class="slide">
+    <p class="eyebrow">MONAD | Gate · 01 / 06</p>
+    <h1>Your agent's mistakes<br>are already your problem.<br><span class="dim">This puts a ceiling on them.</span></h1>
+    <p class="lede">A permission layer for AI agents, live on Monad testnet.</p>
+    <p class="small">No owner. No admin key. Not even for us — there is no upgrade path and no privileged role in the contract.</p>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">02 / 06 · the gap</p>
+    <h1>Agents can plan.<br><span class="dim">They can't be trusted with a wallet.</span></h1>
+    <p class="lede">An agent that needs to act as an economic actor either freezes and waits for a human, or runs on a human's hot wallet. Neither is acceptable.</p>
+    <p class="small">Execution is already autonomous. Identity, authority and liability are not.</p>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">03 / 06 · the failure</p>
+    <h1>Today, "autonomous"<br><span class="dim">means an unattended key.</span></h1>
+    <p class="lede">The overnight rebalance bot glitches and asks for 10× size. A compromised agent raises its own limit. A stranger points liability at someone who never agreed.</p>
+    <p class="small">All three are one prompt injection away, and none of them are hypothetical.</p>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">04 / 06 · the mechanism</p>
+    <h1>Agency law,<br><span class="dim">written as a contract.</span></h1>
+    <p class="lede">A principal grants authority. They are bound by acts inside it, and not bound by acts outside it.</p>
+<pre><span class="pl">registerAgent</span> → consent, signed by the principal
+<span class="pl">setPolicy</span>     → cap · allowed action · active
+<span class="pl">executeGated</span>  → attest, or revert</pre>
+    <p class="small" style="margin-top:1.1rem">Registration reverts unless the principal signs it. Liability is accepted, never assigned.</p>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">05 / 06 · the proof</p>
+    <h1>Five ways<br><span class="dim">to be refused.</span></h1>
+<pre>over the cap          → <span class="no">SpendCapExceeded(100, 10)</span>
+agent self-escalates  → <span class="no">NotPrincipal</span>
+liability assigned    → <span class="no">NotPrincipal</span>
+undelegated action    → <span class="no">ActionNotAllowed</span>
+result replayed       → <span class="no">ResultAlreadyAttested</span>
+unregistered caller   → <span class="no">AgentNotRegistered</span></pre>
+    <p class="small" style="margin-top:1.1rem">
+      Reproduce every one of them from your own phone, with no wallet, right now —
+      a refusal is an <span class="mono">eth_call</span>, so it costs nothing. Only a
+      <em>yes</em> has to be paid for. And a success is checkable too: the attestation id is
+      <span class="ok">recomputable from the event alone</span>, which the site does in front of you.
+    </p>
+  </section>
+
+  <section class="slide">
+    <p class="eyebrow">06 / 06 · honest boundary</p>
+    <h1>What we<br><span class="dim">will not claim.</span></h1>
+    <p class="lede">It moves no value — amounts are policy units. It proves authorization, not that the work happened: the result hash is agent-declared.</p>
+    <p class="small">
+      Denials revert, so the chain records what passed, not what was blocked.
+      Rotating an agent resets its replay set. No reputation, no post-quantum signatures,
+      no Hedera anchoring — <b>not built, and not designed either.</b> We are not claiming a
+      spec we do not have.
+    </p>
+    <p class="lede" style="margin-top:1.6rem">Register who the agent is and who is liable. Set what it may do. The chain refuses the rest.</p>
+  </section>
+
+</div>
+<nav class="bar">
+  <a href="/">← live demo</a>
+  <span id="pos">1 / 6</span>
+  <span>↑↓ / space</span>
+</nav>
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  const pos = document.getElementById("pos");
+  let i = 0;
+  const go = n => {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides[i].scrollIntoView({ behavior: "smooth" });
+    pos.textContent = `${i + 1} / ${slides.length}`;
+  };
+  addEventListener("keydown", e => {
+    if (["ArrowDown", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); go(i + 1); }
+    if (["ArrowUp", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); go(i - 1); }
+    if (e.key === "Home") go(0);
+    if (e.key === "End") go(slides.length - 1);
+  });
+  const io = new IntersectionObserver(es => es.forEach(en => {
+    if (en.isIntersecting) {
+      i = slides.indexOf(en.target);
+      pos.textContent = `${i + 1} / ${slides.length}`;
+    }
+  }), { threshold: 0.6 });
+  slides.forEach(s => io.observe(s));
+</script>
+</body>
+</html>

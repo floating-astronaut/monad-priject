@@ -104,6 +104,26 @@ projector — is untested.
 
 ## Recently closed
 
+- **FE-8 — Attack scenarios and deck** [CLOSED 2026-07-26] — ported the two
+  strongest ideas from the `feat/demo-site` branch on the other repo, rebuilt
+  against **our** contract rather than copied.
+  **Attack surface panel:** a compromised agent raising its own cap, and a
+  stranger naming someone else as the liable principal. Both run as `eth_call`,
+  so they cost nothing, write nothing and need no wallet. Verified on the
+  deployed contract — both return `NotPrincipal()`, zero allowed.
+  These matter because the cap answers *how much* while these answer *who
+  decides*, which is what a compromised agent actually attacks.
+  **Deck** at `/deck.html` — six slides, keyboard and scroll-snap, our palette,
+  no bundle changes.
+  Two factual errors in the source were corrected rather than inherited: it said
+  "four ways to be refused" when the contract has six distinct refusals, and it
+  claimed post-quantum signatures and Hedera anchoring were "specified, not
+  built" when neither is specified anywhere in either repo. The deck now says
+  *not built, and not designed either*.
+  Also verified and rejected their premise for switching explorers: MonadVision
+  and MonadScan both 403 a `curl`, and MonadVision loads the transaction fine in
+  a real browser. Q4 stands.
+
 - **FE-2-FIX — Empty principal on first setup click** [CLOSED 2026-07-26] —
   found by Tejas running the real wallet flow: **Register agent** failed with
   `UNCONFIGURED_NAME (value="")`. Cause was a stale closure — the button passed

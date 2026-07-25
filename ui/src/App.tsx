@@ -22,6 +22,8 @@ import {
 import {
   ACTION_ID,
   AGENT_ADDRESS,
+  attemptLiabilityAssignment,
+  attemptSelfEscalation,
   assertCorrectChain,
   connectWallet,
   decodeGateError,
@@ -36,7 +38,7 @@ import {
   parseAttestation,
   simulateGate,
 } from "./gate";
-import type { ChainAttestation, ChainState } from "./gate";
+import type { AttackResult, ChainAttestation, ChainState } from "./gate";
 
 type StepState = "done" | "active" | "idle";
 type Receipt = {
@@ -93,6 +95,24 @@ function App() {
   const [chain, setChain] = useState<ChainState | null>(null);
   const [chainError, setChainError] = useState("");
   const [onchain, setOnchain] = useState<ChainAttestation[]>([]);
+
+  // Two attacks, run as eth_call so they cost nothing and write nothing. The
+  // cap answers "how much"; these answer "who decides" — which is the part a
+  // compromised agent actually attacks.
+  const [attacks, setAttacks] = useState<Record<string, AttackResult | "running">>({});
+
+  async function runAttack(key: string, run: () => Promise<AttackResult>) {
+    setAttacks((prev) => ({ ...prev, [key]: "running" }));
+    try {
+      const result = await run();
+      setAttacks((prev) => ({ ...prev, [key]: result }));
+    } catch (error) {
+      setAttacks((prev) => ({
+        ...prev,
+        [key]: { refused: false, error: "ERROR", detail: decodeGateError(error).detail },
+      }));
+    }
+  }
 
   // Attestations are read from the chain on a short poll. An attestation
   // written from anywhere — including `cast` at a terminal — appears here
@@ -565,6 +585,64 @@ function App() {
                   )}
                 </div>
               )}
+            </article>
+
+            <article className="panel attack-panel">
+              <PanelHeading
+                icon={<ShieldCheck size={18} />}
+                label="ATTACK SURFACE"
+                title="Try to break it"
+              />
+              <p className="run-caption" style={{ marginTop: 0 }}>
+                Both run as <code>eth_call</code> against the deployed contract — no wallet, no gas,
+                nothing written. The refusal is the chain&apos;s, not this page&apos;s.
+              </p>
+
+              {[
+                {
+                  key: "escalate",
+                  title: "Compromised agent raises its own cap to 1000",
+                  sub: "setPolicy · called by the agent itself",
+                  why: "Stealing the agent key does not widen what it may do.",
+                  run: () => attemptSelfEscalation(agent),
+                },
+                {
+                  key: "liability",
+                  title: "A stranger makes someone else liable for their bot",
+                  sub: "registerAgent · naming a principal who never consented",
+                  why: "Liability has to be accepted. This is the whole product.",
+                  run: () => attemptLiabilityAssignment(principal || AGENT_ADDRESS),
+                },
+              ].map((a) => {
+                const result = attacks[a.key];
+                return (
+                  <div className="attack-row" key={a.key}>
+                    <button
+                      className="attack-button"
+                      disabled={!liveMode || result === "running"}
+                      onClick={() => runAttack(a.key, a.run)}
+                    >
+                      <strong>{a.title}</strong>
+                      <em>{a.sub}</em>
+                    </button>
+                    {result === "running" && (
+                      <div className="attack-result pending">
+                        <RefreshCw className="spin" size={13} /> asking the contract…
+                      </div>
+                    )}
+                    {result && result !== "running" && (
+                      <div className={`attack-result ${result.refused ? "refused" : "allowed"}`}>
+                        <span className="attack-verdict">
+                          {result.refused ? <Check size={12} /> : <X size={12} />}
+                          {result.refused ? "REFUSED BY THE CHAIN" : "ALLOWED — REPORT THIS"}
+                        </span>
+                        <code>{result.detail}</code>
+                        {result.refused && <span className="attack-why">{a.why}</span>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </article>
 
             <div className="principle-note">

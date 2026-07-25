@@ -55,7 +55,7 @@ let any agent burn another agent's result hash. Operator decision.
 | Operator sheet ID | Kept out of Git | `MONAD_SHEET_ID` / `~/.monad-gate/sheet.env` |
 
 One GitHub mirror of this repo is **public**
-(`github.com/floating-astronaut/monad-priject`). Treat every tracked file as
+(`github.com/floating-astronaut/monad-project`). Treat every tracked file as
 world-readable: no IDs, endpoints, or internal URLs that are not meant to be.
 
 ## Burner wallets (ENV-1, 2026-07-26)

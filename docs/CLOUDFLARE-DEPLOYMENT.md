@@ -17,7 +17,7 @@ Sources:
 ## Dashboard configuration
 
 ```text
-Repository: floating-astronaut/monad-priject
+Repository: floating-astronaut/monad-project
 Production branch: main
 Root directory: ui
 Preset: React (Vite)

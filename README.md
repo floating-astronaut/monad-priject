@@ -184,7 +184,7 @@ Custom errors, all decoded by the UI rather than shown as raw selectors:
 ## Repository
 
 ```text
-monad-priject/
+monad-project/
 ├── contracts/
 │   ├── src/MonadGate.sol          # Register · Policy · Gate · Attest
 │   ├── test/                      # unit · authorization · attestation · fuzz + invariants
@@ -209,8 +209,8 @@ and every closed lane leaves evidence in
 ## Run it locally
 
 ```bash
-git clone --recurse-submodules https://github.com/floating-astronaut/monad-priject.git
-cd monad-priject
+git clone --recurse-submodules https://github.com/floating-astronaut/monad-project.git
+cd monad-project
 ```
 
 `--recurse-submodules` matters: `forge-std` is vendored as a submodule. An

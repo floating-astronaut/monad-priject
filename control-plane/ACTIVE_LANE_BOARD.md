@@ -104,6 +104,20 @@ projector — is untested.
 
 ## Recently closed
 
+- **DOC-2 — Repository renamed** [CLOSED 2026-07-26] — the GitHub repo was
+  renamed `monad-priject` → **`monad-project`**, fixing the typo. Both names
+  resolve to the same repo through GitHub's redirect, so nothing broke, but the
+  clone URLs and the demo evidence card now use the canonical name.
+  Entries above this line, and everything in `ENGINEERING_SUPERVISOR.md`, keep
+  the old name deliberately — they record what was true when they were written.
+  Stale branches cleared at the same time: `agent/hackathon-mvp` (fully merged
+  into `main`) on GitHub, and six leftover lane branches on the GitLab mirror.
+  Both remotes now carry `main` only.
+  ⚠️ Cloudflare's stored source config still reads `repo_name: monad-priject`.
+  GitHub serves the rename by redirect and builds continued to fire, but if a
+  future push ever stops triggering a build, reconnect the repo in the
+  dashboard — that is the first thing to check.
+
 - **FE-9 — Full refusal surface and deck link** [CLOSED 2026-07-26] — the attack
   panel now carries **five scenarios**, every one verified against the deployed
   contract with zero allowed:

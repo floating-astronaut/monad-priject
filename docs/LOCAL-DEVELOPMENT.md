@@ -19,8 +19,8 @@ Source: [Monad Foundry guide](https://docs.monad.xyz/guides/deploy-smart-contrac
 ## Clone and orient
 
 ```bash
-git clone --recurse-submodules https://github.com/floating-astronaut/monad-priject.git
-cd monad-priject
+git clone --recurse-submodules https://github.com/floating-astronaut/monad-project.git
+cd monad-project
 git status
 cat docs/DOC-SYSTEM.md
 cat control-plane/ACTIVE_LANE_BOARD.md

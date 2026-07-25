@@ -64,9 +64,103 @@ update to this document.
 
 **Pending addition (BE-1).** OP-1 Q1 authorized principal-controlled rotation
 and deactivation; the function signatures that implement it are not yet chosen
-and are therefore not yet frozen. BE-1 proposes them here for operator sign-off
-before writing the implementation. Until that happens, the three signatures
+and are therefore not yet frozen. BE-1 proposes them below for operator sign-off
+before writing the implementation. Until Tejas signs off, the three signatures
 above remain the whole surface.
+
+### BE-1 proposed interface — AWAITING SIGN-OFF
+
+Status: proposed 2026-07-26 by Claude. Not implemented. Not frozen.
+
+**P0 — `registerAgent` overwrite guard (no signature change)**
+
+```solidity
+error AgentAlreadyRegistered(address agent);
+```
+
+`registerAgent` reverts if `agents[agent].registered` is already true. This is
+the actual fix for the DOC-1 finding: today the function only checks
+`msg.sender == principal`, which any caller satisfies by naming themselves, so
+any address can seize a registered agent and then re-policy it.
+
+**P0 — replay rejection (OP-1 Q9)**
+
+```solidity
+mapping(address => mapping(bytes32 => bool)) public attestedResult;
+error ResultAlreadyAttested(address agent, bytes32 resultHash);
+```
+
+Keyed on `(agent, resultHash)`, **not** `resultHash` alone. Global keying would
+let any registered agent burn a `resultHash` another agent intends to use — a
+griefing vector that costs the attacker one transaction. Per-agent keying still
+prevents an agent replaying its own attestation, which is what Q9 asks for.
+Flagging the tradeoff because global keying is the more obvious reading of Q9
+and is the stronger claim if you would rather have it.
+
+**P1 — rotation (OP-1 Q1)**
+
+```solidity
+function transferPrincipal(address agent, address newPrincipal) external;
+function rotateAgent(address oldAgent, address newAgent) external;
+
+event PrincipalTransferred(address indexed agent, address indexed oldPrincipal, address indexed newPrincipal);
+event AgentRotated(address indexed oldAgent, address indexed newAgent, address indexed principal);
+```
+
+Both callable only by the current principal. `rotateAgent` moves identity **and
+policy** to `newAgent` and clears `oldAgent` — see the stale-policy note below.
+
+**Deactivation needs no new function.** `setPolicy(agent, …, active=false)`
+already enforces principal-only and already halts every action. Adding a
+separate `deactivateAgent` would be a second way to express one state. Q1's
+"deactivate" is satisfied by the existing surface; documenting that instead of
+growing the ABI.
+
+**P1 — stale policy on rotation (latent bug)**
+
+`registerAgent` overwrites `agents[agent]` but never touches `policies[agent]`.
+Any path that rebinds an agent therefore inherits the previous policy, including
+an active one with a high cap. `rotateAgent` must move the policy deliberately
+and clear the old slot; re-registration of a cleared agent must start from no
+policy.
+
+**P2 — nonce not in the event (SECURITY.md violation)**
+
+`docs/SECURITY.md` requires the attestation event to bind "agent, principal,
+action, amount, result, nonce". `ActionAttested` omits the nonce, so
+`attestationId` cannot be recomputed off-chain from the event alone — the
+verification story we tell judges does not currently hold. Fix:
+
+```solidity
+event ActionAttested(
+    bytes32 indexed attestationId,
+    address indexed agent,
+    address indexed principal,
+    bytes32 actionId,
+    uint256 amount,
+    bytes32 resultHash,
+    uint256 nonce            // added
+);
+```
+
+This changes the event ABI the UI decodes. Also proposing the counter move from
+one global `attestationNonce` to per-agent, so one agent's activity does not
+perturb another's attestation IDs.
+
+**P2 — enforce `agent != principal`**
+
+```solidity
+error PrincipalIsAgent();
+```
+
+OP-1 Q2 decided principal must never equal agent. Today that is convention only.
+The authority boundary is the entire product claim, so enforcing it on-chain
+costs one comparison and removes the chance of a misconfigured demo silently
+proving nothing.
+
+**Not proposed:** agent-side kill switch (Q1 excluded it), upgradeability or
+admin role (`SECURITY.md` forbids a backdoor without explicit approval), any
+change to `executeGated`'s parameter list.
 
 ## Trust boundary
 

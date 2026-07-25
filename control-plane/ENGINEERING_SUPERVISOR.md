@@ -101,7 +101,7 @@
   `docs/IMPLEMENTATION-LANES.md`, `contracts/src/MonadGate.sol`,
   `contracts/test/MonadGate.t.sol`.
 - **Method:** proposed the interface into `ARCHITECTURE.md` first (commit
-  `ce7ccd8`), then committed five FAILING tests (`87d33f2` red run) before
+  `ce7ccd8`), then committed five FAILING tests (`58294ac`, red run) before
   touching the contract, so the fix is evidenced by red→green rather than by
   assertion.
 - **Reproduced the flaw:** against the pre-BE-1 contract,
